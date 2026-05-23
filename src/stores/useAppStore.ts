@@ -44,7 +44,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   isGenerating: false,
   apiKey: '',
   apiEndpoint: 'https://api.deepseek.com/v1',
-  model: 'deepseek-chat',
+  model: 'deepseek-v4-flash',
 
   addMessage: (role, content, type = 'text') => {
     const message: Message = {
@@ -176,7 +176,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   loadConfig: () => {
     const apiKey = localStorage.getItem('planseed_api_key') || '';
     const apiEndpoint = localStorage.getItem('planseed_api_endpoint') || 'https://api.deepseek.com/v1';
-    const model = localStorage.getItem('planseed_model') || 'deepseek-chat';
+    const model = localStorage.getItem('planseed_model') || 'deepseek-v4-flash';
     set({ apiKey, apiEndpoint, model });
   },
 }));
