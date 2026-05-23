@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { generateId } from '../utils';
+import { generateId, parseAIMessage } from '../utils';
 import { aiService } from '../services/ai';
 import type { Message, ProjectContext, ConversationStep } from '../types';
 
@@ -13,6 +13,7 @@ interface AppState {
   apiKey: string;
   apiEndpoint: string;
   model: string;
+  reviewStage: 'none' | 'completeness_passed' | 'feasibility_passed';
   addMessage: (role: 'user' | 'assistant', content: string, type?: Message['type']) => void;
   setCurrentStep: (step: ConversationStep) => void;
   updateContext: (updates: Partial<ProjectContext>) => void;
@@ -48,6 +49,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   apiKey: '',
   apiEndpoint: 'https://api.deepseek.com',
   model: 'deepseek-v4-flash',
+  reviewStage: 'none',
 
   addMessage: (role, content, type = 'text') => {
     const message: Message = {
@@ -90,6 +92,12 @@ export const useAppStore = create<AppState>((set, get) => ({
       }
 
       addMessage('assistant', fullResponse);
+
+      // Detect review pass markers in AI response
+      const parsed = parseAIMessage(fullResponse);
+      if (parsed.reviewPass) {
+        set({ reviewStage: parsed.reviewPass === 'completeness' ? 'completeness_passed' : 'feasibility_passed' });
+      }
 
       // Update preview after each AI response
       const { messages: updatedMessages } = get();
@@ -165,7 +173,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         { apiKey, apiEndpoint, model },
       );
       set({ document: doc, currentStep: 'complete' });
-      addMessage('assistant', '文档已生成！你可以在右侧预览区域查看，也可以导出为 Markdown 或 AI Prompt。\n\n你可以选择接下来的操作：\n\n[OPTIONS:修改方案|就此结束]');
+      addMessage('assistant', '文档已生成！你可以在右侧预览区域查看，也可以导出为 Markdown 或 AI Prompt。\n\n你可以选择接下来的操作：\n\n[OPTIONS:请求 AI 审视完整性|请求 AI 审视可行性及复杂度|修改方案|就此结束]');
     } catch {
       addMessage('assistant', '生成文档时出错，请重试。');
     } finally {
@@ -251,6 +259,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       context: { ...defaultContext },
       document: '',
       isGenerating: false,
+      reviewStage: 'none',
     });
     // Re-trigger welcome message
     if (apiKey) {

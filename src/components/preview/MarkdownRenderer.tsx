@@ -1,4 +1,5 @@
 import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface MarkdownRendererProps {
   content: string;
@@ -110,6 +111,9 @@ const styles: Record<string, React.CSSProperties> = {
     marginBottom: '16px',
     fontSize: '13px',
   },
+  thead: {},
+  tbody: {},
+  tr: {},
   th: {
     background: '#f9fafb',
     fontWeight: 600,
@@ -127,6 +131,7 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
   return (
     <div style={styles.wrapper}>
       <Markdown
+        remarkPlugins={[remarkGfm]}
         components={{
           h1: ({ children }) => <h1 style={styles.h1}>{children}</h1>,
           h2: ({ children }) => <h2 style={styles.h2}>{children}</h2>,
@@ -148,6 +153,9 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
           blockquote: ({ children }) => <blockquote style={styles.blockquote}>{children}</blockquote>,
           hr: () => <hr style={styles.hr} />,
           table: ({ children }) => <table style={styles.table}>{children}</table>,
+          thead: ({ children }) => <thead style={styles.thead}>{children}</thead>,
+          tbody: ({ children }) => <tbody style={styles.tbody}>{children}</tbody>,
+          tr: ({ children }) => <tr style={styles.tr}>{children}</tr>,
           th: ({ children }) => <th style={styles.th}>{children}</th>,
           td: ({ children }) => <td style={styles.td}>{children}</td>,
         }}

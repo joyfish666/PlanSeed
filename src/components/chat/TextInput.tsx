@@ -1,4 +1,4 @@
-import { useState, type KeyboardEvent } from 'react';
+import { useState, useRef, useEffect, type KeyboardEvent } from 'react';
 
 interface TextInputProps {
   onSend: (content: string) => void;
@@ -8,6 +8,14 @@ interface TextInputProps {
 
 export function TextInput({ onSend, disabled, placeholder = '输入你的回答...' }: TextInputProps) {
   const [value, setValue] = useState('');
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+  }, [value]);
 
   const handleSend = () => {
     const trimmed = value.trim();
@@ -26,13 +34,14 @@ export function TextInput({ onSend, disabled, placeholder = '输入你的回答.
   return (
     <div className="flex gap-2 p-3 border-t border-gray-200 bg-white">
       <textarea
+        ref={textareaRef}
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={handleKeyDown}
         disabled={disabled}
         placeholder={placeholder}
-        rows={1}
-        className="flex-1 resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100"
+        rows={3}
+        className="flex-1 resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100 max-h-40 overflow-y-auto"
       />
       <button
         onClick={handleSend}

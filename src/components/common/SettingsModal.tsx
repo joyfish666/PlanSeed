@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useAppStore } from '../../stores/useAppStore';
 import { aiService } from '../../services/ai';
+
+const KEY_MASK = '***';
 
 interface SettingsModalProps {
   open: boolean;
@@ -15,23 +17,46 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
   const setApiEndpoint = useAppStore((s) => s.setApiEndpoint);
   const setModel = useAppStore((s) => s.setModel);
 
-  const [key, setKey] = useState(apiKey);
+  // Use ref to track whether user has actually edited the key input
+  const keyModifiedRef = useRef(false);
+  const [key, setKey] = useState(apiKey ? KEY_MASK : '');
   const [endpoint, setEndpoint] = useState(apiEndpoint);
   const [mdl, setMdl] = useState(model);
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ ok: boolean; message: string } | null>(null);
 
+  const handleKeyChange = useCallback((value: string) => {
+    keyModifiedRef.current = true;
+    setKey(value);
+  }, []);
+
+  const handleKeyFocus = useCallback(() => {
+    // When user focuses the masked input, clear it for editing
+    if (key === KEY_MASK && apiKey) {
+      keyModifiedRef.current = true;
+      setKey('');
+    }
+  }, [key, apiKey]);
+
   if (!open) return null;
 
   const handleSave = () => {
-    setApiKey(key);
+    // Only update apiKey if user actually modified it
+    if (keyModifiedRef.current) {
+      setApiKey(key.trim());
+    }
     setApiEndpoint(endpoint);
     setModel(mdl);
     onClose();
   };
 
   const handleTest = async () => {
-    if (!key.trim()) {
+    // Determine which key to use:
+    // - User modified input -> use input value
+    // - User didn't modify -> use cached store value
+    const effectiveKey = keyModifiedRef.current ? key.trim() : apiKey;
+
+    if (!effectiveKey) {
       setTestResult({ ok: false, message: '请先填写 API Key' });
       return;
     }
@@ -39,7 +64,7 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
     setTestResult(null);
     try {
       const response = await aiService.testConnection({
-        apiKey: key.trim(),
+        apiKey: effectiveKey,
         apiEndpoint: endpoint.trim() || 'https://api.deepseek.com',
         model: mdl.trim() || 'deepseek-v4-flash',
       });
@@ -66,12 +91,16 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">API Key</label>
             <input
-              type="password"
+              type={key === KEY_MASK ? 'text' : 'password'}
               value={key}
-              onChange={(e) => setKey(e.target.value)}
-              placeholder="sk-..."
+              onChange={(e) => handleKeyChange(e.target.value)}
+              onFocus={handleKeyFocus}
+              placeholder={apiKey ? '已有缓存的 Key，点击输入框修改' : 'sk-...'}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
             />
+            {apiKey && !keyModifiedRef.current && (
+              <p className="text-xs text-gray-400 mt-1">已有本地缓存的 API Key，点击输入框可修改</p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">API Endpoint</label>

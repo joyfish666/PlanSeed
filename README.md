@@ -1,75 +1,146 @@
-# PlanSeed：对话式项目规划文档生成器
+# PlanSeed
 
-## 一句话描述
-一款面向 AI 开发初学者的对话式项目规划文档生成器，采用纯前端技术实现，可下载后本地运行。通过 AI 驱动的结构化引导，帮助非技术用户将模糊的想法，转化为清晰、专业、可供下游 AI 编码工具或开发者参考的项目规划文档。
+> Conversational Project Planning Document Generator
 
-## 核心价值
-**再简单的想法，也值得被认真对待。**
+**PlanSeed** is a pure-frontend web application that guides non-technical users through a structured AI-driven dialogue to produce a professional Markdown project specification document.
 
-从“我有一个想法”到“这是一份可以开始讨论的方案”，中间隔着一段对新手来说最难的路。本产品不做代码生成，而是专注填补这段空白：像一位有耐心的向导，用你听得懂的语言，一步步帮你把模糊的想法梳理成一份结构完整、表述清晰的项目说明书。它提供的是一个可预期、可协作的起点，让你不再是面对空白输入框发呆，而是拿着一份像样的方案，更有底气地迈出从 0 到 1 的第一步。
+**Every idea, no matter how simple, deserves to be taken seriously.**
 
-## 目标用户
+[中文文档](./README-zh.md) | [Development Documentation](./开发文档.md)
 
-| 用户画像 | 痛点 |
-|----------|------|
-| 有产品想法但缺乏需求梳理经验的创业者 | 脑中的想法无法形成结构化的需求文档，与 AI 编码工具或开发者沟通时，说不清楚自己要什么，反复返工 |
-| 想用 AI 工具开发应用但经验为零的初学者 | 不知道从哪里开始问、怎么问，面对空白 Prompt 框感到无所适从，缺少一个可以启动的支点 |
+---
 
-## 核心功能
+## Overview
 
-### 1. 对话式需求引导
-用户打开网页后，内嵌的 AI 大模型（通过前端调用 API）会以选择题和开放式提问相结合的方式，逐步引导你明确以下维度：
+PlanSeed bridges the gap between "I have an idea" and "I have a plan." It acts as a patient guide, asking questions in plain language, presenting choices as clickable options, and assembling a structured document in real time — no coding knowledge required.
 
-- **项目类型**：你想做什么？（日历 / 博客 / 商城 / 待办事项 / 自定义）
-- **核心功能**：用户可以在你的应用里做什么？（多选并补充细节）
-- **使用场景**：主要在什么设备上使用？是否需要离线功能？
-- **技术偏好**：你对技术选型的态度是什么？（完全不懂帮我推荐 / 我有偏好 / 团队已有标准）
-- **项目规模与目标**：是快速验证一个想法，还是做一个可长期维护的完整产品？
-- **交付节奏**：一次性全部做完，还是先出核心功能再逐步迭代？
+The generated document covers three sections:
+1. **Project Principles & Constraints** — core rules, technical boundaries, non-functional requirements
+2. **Functional Specifications** — user stories, acceptance criteria, business rules
+3. **Tech Stack Recommendations** — demand-driven, only what the project actually needs
 
-在回答的基础上，AI 会主动进行智能追问，挖掘你未曾说出口的隐含需求（例如：“用户创建的内容需要审核吗？”“需要登录功能吗？”），并将澄清结果实时补充进方案中。
+## Features
 
-### 2. AI 驱动的技术栈推荐
-当用户选择“帮我推荐”时，AI 会根据项目类型、规模和场景等信息，首先生成一个最推荐的首选方案（综合考虑新手友好度、社区活跃度、长期维护成本）。如果用户希望了解更多选项，AI 再视情况介绍 1-2 个次要备选方案，并明确说明各方案间的差异。
+### Conversational Guidance
+The AI interview follows a single-question-per-message principle. Users answer through option buttons or free-text input. The flow covers: project type, core features, usage scenarios, target users, and tech stack — with dynamic follow-up questions to uncover implicit requirements.
 
-**推荐策略：**
-- **集中备注稳定版本号**：在技术栈板块末尾，以备注形式列出推荐方案所参照的稳定版本号（例如 React 18.2.0、Python 3.11.5）及兼容性说明，并附注“以上版本信息基于生成时的官方稳定版本，请以最新的长期支持版为准”。
-- 不再出现“不绑定小版本”等模糊表述，确保用户或下游开发者能明确知道具体版本参考。
+### Feature Confirmation Loop
+After initial feature selection, the AI dynamically suggests up to 3 missing features per round (based on the current feature set, not a static list). Users can add features, input custom ones, or confirm completeness. A final summary requires explicit user approval before proceeding.
 
-为了让非技术用户理解不同技术方案的差异，AI 会从以下几个主观可感的维度进行通俗化比较：
+### Demand-Driven Tech Stack
+Tech stack recommendations are the last step, only after all features are confirmed. No technology layer is assumed — frontend, backend, databases, and middleware are recommended only when the project requires them. The AI autonomously selects candidates based on project needs rather than picking from a hardcoded list.
 
-- **上手与维护的友好程度**：对新手是否友好？后续改动是否容易？
-- **功能模块的丰富性**：有没有现成的商业或开源模块可以直接使用？
-- **未来扩展的灵活性**：如果以后想更换平台（如从 Web 扩展到移动端），是否需要推倒重来？
-- **学习投入预估**：如果你未来想自己参与修改，大概需要投入多少精力？
+### Real-Time Document Preview
+A Markdown preview panel updates automatically after each AI response. Users can also manually refresh. The preview uses `react-markdown` with GFM support (tables, strikethrough, task lists).
 
-用户可以根据自己在意的侧重点做出选择，也可以要求 AI 调整或补充推荐。
+### AI Review Mechanism
+After document generation, users can request two types of review:
+- **Completeness Review** — checks all three document sections for gaps or vague descriptions
+- **Feasibility & Complexity Review** — evaluates technical feasibility, implementation difficulty, estimated timeline, and optimization opportunities
 
-### 3. 有节奏的实时预览
-在对话过程中，页面侧边栏会同步展示方案的 Markdown 预览。预览内容随对话产生实质性进展后才触发更新：当用户完成关键选择或输入描述性内容，AI 将其转化为文档片段并更新至预览区。文档采用层级分明的标题结构，可通过清晰的索引快速定位到任意章节。这样，你能直观感受到一份完整的方案文档是如何在引导中一点点成型的。
+### Export Options
+- Copy as raw Markdown
+- Copy as AI Prompt (with a brief preamble for downstream tools)
+- Download as `.md` file
 
-### 4. 三模块结构化方案生成
-根据对话结果，最终会自动生成一份结构清晰的方案文档，始终分为三个独立板块：
+### Settings & Persistence
+API Key, Endpoint, and Model are stored in `localStorage`. The API Key is masked in the UI. Default provider: DeepSeek (`deepseek-v4-flash`).
 
-- **项目基本原则与约束**：核心原则、技术边界、非功能性需求（如性能、安全性要求等）。
-- **功能规范**：结构化的用户故事、详细的验收标准（包含正常流程与异常处理）、核心业务规则。
-- **技术栈推荐说明**：首选方案（以及可选的次要方案）、多维度理由对比，以及板块末尾的版本参考备注。
+## Tech Stack
 
-文档开头会标注生成日期，方便你与后续合作者了解方案的时效性。
+| Category | Technology |
+|----------|-----------|
+| Framework | React 19 + TypeScript |
+| Build Tool | Vite 8 |
+| Styling | Tailwind CSS v4 |
+| State Management | Zustand 5 |
+| Markdown Rendering | react-markdown 10 + remark-gfm |
+| AI Interface | OpenAI-compatible API (user-provided) |
 
-### 5. AI 辅助评审
-在生成最终文档之前，AI 会自动对方案进行一次自检，重点关注：
+## Quick Start
 
-- 功能逻辑是否形成闭环？
-- 关键流程（正常路径与异常处理）是否遗漏？
-- 非功能性约束是否明确？
+### Prerequisites
+- Node.js >= 18
+- npm >= 9
 
-AI 会将发现的潜在问题点列出，并用通俗语言说明为何它们重要，同时给出修改建议。你可以依据这些建议直接在对话中调整方案，而不需要依赖自己具备专业评审能力。
+### Installation
 
-### 6. 网页端导出
-提供两种导出方式：
+```bash
+git clone https://github.com/joyfish666/PlanSeed.git
+cd PlanSeed
+npm install
+```
 
-- **复制为 Markdown**：保留完整标题层级，可直接保存或放入项目仓库作为正式文档。
-- **复制为 AI Agent 协作 Prompt**：生成的内容本质依然是结构化 Markdown，但会在文档开头附上一句简单的引导（例如“请以本规范为依据进行后续工作”）。注意：本产品的核心目标是为初学者写出一份清晰的文档，让你不再无从下手；至于下游 AI 编码工具如何使用这份文档，效果等同于普通 Markdown 输入，我们不做过度的“优化承诺”。
+### Development
 
-## 典型使用流程
+```bash
+npm run dev
+```
+
+Open the URL shown in the terminal. Click the **Settings** button in the top-right corner to configure your API Key, Endpoint, and Model name.
+
+### Build
+
+```bash
+npm run build        # Type-check + production build
+npm run preview      # Preview the production build locally
+```
+
+### Other Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server with HMR |
+| `npm run build` | TypeScript check + Vite production build |
+| `npm run preview` | Preview production build locally |
+| `npm run lint` | Run ESLint |
+| `npm run type-check` | Run TypeScript type checking only |
+
+## Project Structure
+
+```
+PlanSeed/
+├── src/
+│   ├── components/
+│   │   ├── chat/            # ChatContainer, MessageList, MessageBubble, TextInput
+│   │   ├── preview/         # PreviewPanel, MarkdownRenderer
+│   │   ├── export/          # ExportBar
+│   │   └── common/          # SettingsModal, LoadingIndicator
+│   ├── stores/              # Zustand store (useAppStore)
+│   ├── services/            # AI API service (aiService)
+│   ├── prompts/             # System prompt and template constants
+│   ├── types/               # TypeScript interfaces
+│   ├── utils/               # Utilities (parseAIMessage, generateId, etc.)
+│   ├── App.tsx              # Root component with responsive layout
+│   └── main.tsx             # Entry point
+├── public/
+├── index.html
+├── package.json
+├── vite.config.ts
+└── tsconfig.json
+```
+
+## Documentation
+
+| Document | Language | Description |
+|----------|----------|-------------|
+| [README.md](./README.md) | English | Project overview and quick start (this file) |
+| [README-zh.md](./README-zh.md) | Chinese | Comprehensive Chinese documentation |
+| [开发文档.md](./开发文档.md) | Chinese | Technical development specification |
+
+## Deployment
+
+This is a pure static application — no server-side code. Deploy to any static hosting provider:
+
+- **GitHub Pages**: Use the included GitHub Actions workflow
+- **Vercel / Netlify**: Connect the repo, set build command to `npm run build`, output directory to `dist`
+
+## Security
+
+- API Keys are stored only in the user's browser `localStorage`
+- No data is sent to any server other than the user-configured AI endpoint
+- The application is fully client-side
+
+## License
+
+See the repository for license information.
