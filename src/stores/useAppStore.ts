@@ -20,6 +20,7 @@ interface AppState {
   selectOption: (dimension: string, value: string | string[]) => void;
   generateDocument: () => Promise<void>;
   refreshPreview: () => Promise<void>;
+  resetAll: () => void;
   setApiKey: (key: string) => void;
   setApiEndpoint: (endpoint: string) => void;
   setModel: (model: string) => void;
@@ -44,7 +45,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   document: '',
   isGenerating: false,
   apiKey: '',
-  apiEndpoint: 'https://api.deepseek.com/v1',
+  apiEndpoint: 'https://api.deepseek.com',
   model: 'deepseek-v4-flash',
 
   addMessage: (role, content, type = 'text') => {
@@ -66,7 +67,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     })),
 
   sendMessage: async (content: string) => {
-    const { addMessage, context, apiKey, apiEndpoint, model } = get();
+    const { addMessage, apiKey, apiEndpoint, model } = get();
     if (!apiKey) return;
 
     addMessage('user', content);
@@ -83,7 +84,6 @@ export const useAppStore = create<AppState>((set, get) => ({
         apiKey,
         apiEndpoint,
         model,
-        context,
       })) {
         fullResponse += chunk;
       }
@@ -91,12 +91,12 @@ export const useAppStore = create<AppState>((set, get) => ({
       addMessage('assistant', fullResponse);
 
       // Update preview after each AI response
-      const { messages: updatedMessages, context: currentContext } = get();
+      const { messages: updatedMessages } = get();
       if (updatedMessages.length >= 2) {
         try {
           const preview = await aiService.generatePreview(
             updatedMessages.map((m) => ({ role: m.role, content: m.content })),
-            { apiKey, apiEndpoint, model, context: currentContext },
+            { apiKey, apiEndpoint, model },
           );
           if (preview) set({ document: preview });
         } catch {
@@ -152,18 +152,17 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   generateDocument: async () => {
-    const { context, apiKey, apiEndpoint, model, addMessage } = get();
+    const { messages, apiKey, apiEndpoint, model, addMessage } = get();
     if (!apiKey) return;
 
     set({ isGenerating: true, currentStep: 'generating' });
     addMessage('assistant', '正在为你生成项目规划文档...');
 
     try {
-      const doc = await aiService.generateDocument(context, {
-        apiKey,
-        apiEndpoint,
-        model,
-      });
+      const doc = await aiService.generateDocument(
+        messages.map((m) => ({ role: m.role, content: m.content })),
+        { apiKey, apiEndpoint, model },
+      );
       set({ document: doc, currentStep: 'complete' });
       addMessage('assistant', '文档已生成！你可以在右侧预览区域查看，也可以导出为 Markdown 或 AI Prompt。');
     } catch {
@@ -174,14 +173,14 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   refreshPreview: async () => {
-    const { messages, context, apiKey, apiEndpoint, model } = get();
+    const { messages, apiKey, apiEndpoint, model } = get();
     if (!apiKey || messages.length < 2) return;
 
     set({ isGenerating: true });
     try {
       const preview = await aiService.generatePreview(
         messages.map((m) => ({ role: m.role, content: m.content })),
-        { apiKey, apiEndpoint, model, context },
+        { apiKey, apiEndpoint, model },
       );
       if (preview) set({ document: preview });
     } catch {
@@ -208,8 +207,29 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   loadConfig: () => {
     const apiKey = localStorage.getItem('planseed_api_key') || '';
-    const apiEndpoint = localStorage.getItem('planseed_api_endpoint') || 'https://api.deepseek.com/v1';
+    const apiEndpoint = localStorage.getItem('planseed_api_endpoint') || 'https://api.deepseek.com';
     const model = localStorage.getItem('planseed_model') || 'deepseek-v4-flash';
     set({ apiKey, apiEndpoint, model });
+  },
+
+  resetAll: () => {
+    const { apiKey } = get();
+    set({
+      messages: [],
+      currentStep: 'welcome',
+      isTyping: false,
+      context: { ...defaultContext },
+      document: '',
+      isGenerating: false,
+    });
+    // Re-trigger welcome message
+    if (apiKey) {
+      set({ currentStep: 'project_type' });
+      const addMessage = get().addMessage;
+      addMessage(
+        'assistant',
+        '你好！我是 PlanSeed，你的项目规划向导。\n\n我会通过几个简单的问题，帮你把脑海中的想法整理成一份清晰的项目规划文档。整个过程大概需要 5-10 分钟。\n\n首先，你想做什么类型的应用？\n\n1. **日历应用** — 日程管理与提醒\n2. **博客平台** — 内容创作与发布\n3. **电商商城** — 在线购物与交易\n4. **待办事项** — 任务管理与追踪\n5. **自定义** — 描述你的想法',
+      );
+    }
   },
 }));

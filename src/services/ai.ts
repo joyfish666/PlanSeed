@@ -1,11 +1,9 @@
 import { SYSTEM_PROMPT } from '../prompts';
-import type { ProjectContext, Message } from '../types';
 
 interface AIConfig {
   apiKey: string;
   apiEndpoint: string;
   model: string;
-  context?: ProjectContext;
 }
 
 async function* streamResponse(response: Response): AsyncGenerator<string> {
@@ -108,23 +106,23 @@ ${conversation}`;
   },
 
   async generateDocument(
-    context: ProjectContext,
+    messages: { role: string; content: string }[],
     config: AIConfig,
   ): Promise<string> {
-    const prompt = `基于以下项目信息，生成一份完整的项目规划文档。
+    const conversation = messages.map((m) => `${m.role === 'user' ? '用户' : 'AI'}：${m.content}`).join('\n\n');
 
-项目类型：${context.projectType}
-核心功能：${context.coreFeatures.join('、')}
-使用场景：设备 - ${context.usageScenario.devices.join('、')}，离线需求 - ${context.usageScenario.offlineSupport ? '是' : '否'}
-技术偏好：${context.techPreference.mode}
-项目规模：${context.projectScale === 'mvp' ? 'MVP 快速验证' : '完整产品'}
-交付节奏：${context.deliveryRhythm === 'once' ? '一次性完成' : '迭代式开发'}
-补充说明：${context.additionalRequirements || '无'}
+    const prompt = `以下是用户与 AI 的完整对话记录，请从中提取所有已确认的项目信息，生成一份完整的项目规划文档。
 
-请按以下结构生成 Markdown 文档：
-1. 项目基本原则与约束
-2. 功能规范（含用户故事和验收标准）
-3. 技术栈推荐（含版本备注）`;
+要求：
+- 从对话中提取所有明确的信息，不要遗漏任何用户确认过的内容
+- 按以下结构生成 Markdown 文档：
+  1. 项目基本原则与约束
+  2. 功能规范（含用户故事和验收标准）
+  3. 技术栈推荐（含版本备注）
+- 不需要额外的说明文字，直接输出 Markdown 文档
+
+对话记录：
+${conversation}`;
 
     const response = await fetch(`${config.apiEndpoint}/chat/completions`, {
       method: 'POST',

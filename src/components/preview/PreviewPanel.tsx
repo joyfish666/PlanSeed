@@ -6,10 +6,13 @@ export function PreviewPanel() {
   const document = useAppStore((s) => s.document);
   const isGenerating = useAppStore((s) => s.isGenerating);
   const messages = useAppStore((s) => s.messages);
+  const currentStep = useAppStore((s) => s.currentStep);
   const generateDocument = useAppStore((s) => s.generateDocument);
   const refreshPreview = useAppStore((s) => s.refreshPreview);
+  const resetAll = useAppStore((s) => s.resetAll);
 
   const hasConversation = messages.length >= 2;
+  const isComplete = currentStep === 'complete';
 
   return (
     <div className="flex flex-col h-full border-l border-gray-200 bg-white">
@@ -56,8 +59,8 @@ export function PreviewPanel() {
         )}
       </div>
       {document && (
-        <div className="border-t border-gray-200">
-          <div className="px-3 pt-2 pb-1">
+        <div className="border-t border-gray-200 p-3 space-y-2">
+          {!isComplete && (
             <button
               onClick={generateDocument}
               disabled={isGenerating}
@@ -65,7 +68,15 @@ export function PreviewPanel() {
             >
               重新生成完整文档
             </button>
-          </div>
+          )}
+          {isComplete && (
+            <button
+              onClick={resetAll}
+              className="w-full px-3 py-2 text-sm text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors cursor-pointer"
+            >
+              开启下一个项目
+            </button>
+          )}
           <ExportBar />
         </div>
       )}
