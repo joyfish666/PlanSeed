@@ -1,17 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { MessageBubble } from './MessageBubble';
-import { OptionCards } from './OptionCards';
 import type { Message } from '../../types';
 import { useAppStore } from '../../stores/useAppStore';
-import { WELCOME_PROMPT, PROJECT_TYPE_PROMPT } from '../../prompts';
-
-const PROJECT_TYPES = [
-  { label: '日历应用', value: 'calendar', description: '日程管理与提醒' },
-  { label: '博客平台', value: 'blog', description: '内容创作与发布' },
-  { label: '电商商城', value: 'ecommerce', description: '在线购物与交易' },
-  { label: '待办事项', value: 'todo', description: '任务管理与追踪' },
-  { label: '自定义', value: 'custom', description: '描述你的想法' },
-];
+import { WELCOME_PROMPT } from '../../prompts';
 
 interface MessageListProps {
   messages: Message[];
@@ -20,8 +11,7 @@ interface MessageListProps {
 
 export function MessageList({ messages, isTyping }: MessageListProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const currentStep = useAppStore((s) => s.currentStep);
-  const selectOption = useAppStore((s) => s.selectOption);
+  const sendMessage = useAppStore((s) => s.sendMessage);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
@@ -37,13 +27,12 @@ export function MessageList({ messages, isTyping }: MessageListProps) {
         </div>
       )}
       {messages.map((msg) => (
-        <MessageBubble key={msg.id} message={msg} />
+        <MessageBubble
+          key={msg.id}
+          message={msg}
+          onOptionSelect={(value) => sendMessage(value)}
+        />
       ))}
-      {currentStep === 'project_type' && messages.length > 0 && messages[messages.length - 1].role === 'assistant' && (
-        <div className="ml-2 mt-2">
-          <OptionCards options={PROJECT_TYPES} onSelect={(v) => selectOption('projectType', v as string)} />
-        </div>
-      )}
       {isTyping && (
         <div className="flex justify-start mb-3">
           <div className="bg-gray-100 rounded-2xl rounded-bl-md px-4 py-2.5 text-sm text-gray-500">

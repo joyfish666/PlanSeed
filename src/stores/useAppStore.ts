@@ -96,16 +96,14 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   selectOption: (dimension, value) => {
-    const { updateContext, addMessage, sendMessage } = get();
+    const { updateContext, sendMessage } = get();
 
     switch (dimension) {
       case 'projectType':
         updateContext({ projectType: value as string });
-        addMessage('user', value as string, 'selection');
         break;
       case 'coreFeatures':
         updateContext({ coreFeatures: value as string[] });
-        addMessage('user', (value as string[]).join('、'), 'selection');
         break;
       case 'devices':
         updateContext({
@@ -114,7 +112,6 @@ export const useAppStore = create<AppState>((set, get) => ({
             devices: value as ('desktop' | 'mobile' | 'tablet')[],
           },
         });
-        addMessage('user', (value as string[]).join('、'), 'selection');
         break;
       case 'offlineSupport':
         updateContext({
@@ -123,21 +120,20 @@ export const useAppStore = create<AppState>((set, get) => ({
             offlineSupport: value === 'true',
           },
         });
-        addMessage('user', value === 'true' ? '需要' : '不需要', 'selection');
         break;
       case 'techPreference':
         updateContext({ techPreference: { mode: value as 'recommend' | 'custom' | 'team' } });
-        addMessage('user', value as string, 'selection');
         break;
       case 'projectScale':
         updateContext({ projectScale: value as 'mvp' | 'full' });
-        addMessage('user', value === 'mvp' ? '快速验证 MVP' : '完整产品', 'selection');
         break;
       case 'deliveryRhythm':
         updateContext({ deliveryRhythm: value as 'once' | 'iterative' });
-        addMessage('user', value === 'once' ? '一次性完成' : '迭代式开发', 'selection');
         break;
     }
+
+    // Send the selected value to AI and get the next question
+    sendMessage(value as string);
   },
 
   generateDocument: async () => {
