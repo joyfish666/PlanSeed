@@ -86,7 +86,7 @@ export const aiService = {
       body: JSON.stringify({
         model: config.model,
         messages: [
-          { role: 'user', content: '请用一句话介绍你自己，包括你的模型名称。' },
+          { role: 'user', content: '请报告你的模型名称（model name）和版本号。只回答模型名称和版本，不要其他内容。例如：deepseek-chat / GPT-4o-mini / Claude 3.5 Sonnet 等。' },
         ],
         stream: false,
       }),
