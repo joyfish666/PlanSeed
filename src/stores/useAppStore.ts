@@ -200,7 +200,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       await aiService.testConnection({ apiKey, apiEndpoint, model });
 
       // Send hidden system instruction to AI without showing it in UI
-      const hiddenPrompt = '用户已确认模型连接正常，现在开始规划项目。请询问用户想做什么类型的项目，并提供常见项目类型供选择。';
+      const hiddenPrompt = '用户已确认模型连接正常，现在开始规划项目。请直接询问用户想做一个什么样的项目，用具体项目实例引导用户（比如：日历应用、待办事项、博客、商城、聊天室等），不要停留在抽象的类型层面。';
       const messages = get().messages.map((m) => ({ role: m.role, content: m.content }));
       messages.push({ role: 'user', content: hiddenPrompt });
 
