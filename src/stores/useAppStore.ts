@@ -192,23 +192,30 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   startWithConnectionTest: async () => {
-    const { apiKey, apiEndpoint, model, sendMessage } = get();
-    if (!apiKey) {
-      sendMessage('开始规划项目');
-      return false;
-    }
+    const { apiKey, apiEndpoint, model } = get();
+    if (!apiKey) return false;
 
     set({ isTyping: true });
     try {
       await aiService.testConnection({ apiKey, apiEndpoint, model });
+
+      // Send hidden system instruction to AI without showing it in UI
+      const hiddenPrompt = '用户已确认模型连接正常，现在开始规划项目。请询问用户想做什么类型的项目，并提供常见项目类型供选择。';
+      const messages = get().messages.map((m) => ({ role: m.role, content: m.content }));
+      messages.push({ role: 'user', content: hiddenPrompt });
+
+      let fullResponse = '';
+      for await (const chunk of aiService.sendMessage(messages, { apiKey, apiEndpoint, model })) {
+        fullResponse += chunk;
+      }
+
+      get().addMessage('assistant', fullResponse);
       set({ isTyping: false });
-      sendMessage('用户已确认模型连接正常，现在开始规划项目。请询问用户想做什么类型的项目，并提供常见项目类型供选择。');
       return true;
     } catch (err) {
       set({ isTyping: false });
       const msg = err instanceof Error ? err.message : String(err);
-      const addMessage = get().addMessage;
-      addMessage('assistant', `模型连接失败：${msg}\n\n请检查设置中的 API Key、API Endpoint 和模型名称是否正确，修改后重新检测。`);
+      get().addMessage('assistant', `模型连接失败：${msg}\n\n请检查设置中的 API Key、API Endpoint 和模型名称是否正确，修改后重新检测。`);
       return false;
     }
   },
