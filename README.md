@@ -6,7 +6,7 @@
 
 **Every idea, no matter how simple, deserves to be taken seriously.**
 
-[中文文档](./README-zh.md) | [Development Documentation](./开发文档.md)
+[中文文档](./README-zh.md) | [Development Documentation](./开发文档.md) | [Live Demo](https://joyfish666.github.io/PlanSeed/)
 
 ---
 
@@ -132,7 +132,7 @@ PlanSeed/
 
 This is a pure static application — no server-side code. Deploy to any static hosting provider:
 
-- **GitHub Pages**: Use the included GitHub Actions workflow
+- **GitHub Pages**: Use the included GitHub Actions workflow — [live site](https://joyfish666.github.io/PlanSeed/)
 - **Vercel / Netlify**: Connect the repo, set build command to `npm run build`, output directory to `dist`
 
 ## Security

@@ -2,7 +2,7 @@
 
 > 再简单的想法，也值得被认真对待。
 
-[English](./README.md) | [开发文档](./开发文档.md)
+[English](./README.md) | [开发文档](./开发文档.md) | [在线体验](https://joyfish666.github.io/PlanSeed/)
 
 ---
 
@@ -172,7 +172,7 @@ PlanSeed/
 
 本项目为纯静态应用，可部署到任何静态托管平台：
 
-- **GitHub Pages**：使用项目内置的 GitHub Actions 工作流
+- **GitHub Pages**：使用项目内置的 GitHub Actions 工作流 — [在线站点](https://joyfish666.github.io/PlanSeed/)
 - **Vercel / Netlify**：连接仓库，构建命令 `npm run build`，输出目录 `dist`
 
 ## 安全说明
