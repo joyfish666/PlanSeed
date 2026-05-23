@@ -164,7 +164,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         { apiKey, apiEndpoint, model },
       );
       set({ document: doc, currentStep: 'complete' });
-      addMessage('assistant', '文档已生成！你可以在右侧预览区域查看，也可以导出为 Markdown 或 AI Prompt。');
+      addMessage('assistant', '文档已生成！你可以在右侧预览区域查看，也可以导出为 Markdown 或 AI Prompt。\n\n你可以选择接下来的操作：\n\n[OPTIONS:修改方案|就此结束]');
     } catch {
       addMessage('assistant', '生成文档时出错，请重试。');
     } finally {

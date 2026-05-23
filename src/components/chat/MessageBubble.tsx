@@ -45,6 +45,11 @@ export function MessageBubble({ message, onOptionSelect }: MessageBubbleProps) {
   const mode = parsed?.mode ?? 'none';
   const options = parsed?.options ?? [];
 
+  // Hide generic "自定义输入..." if options already contain a custom-type option
+  const hasCustomOption = options.some(
+    (opt) => opt.label.includes('自定义') || opt.label.includes('其他'),
+  );
+
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-3`}>
       <div className="max-w-[80%]">
@@ -72,12 +77,14 @@ export function MessageBubble({ message, onOptionSelect }: MessageBubbleProps) {
                   {opt.label}
                 </button>
               ))}
-              <button
-                onClick={() => setShowCustomInput(true)}
-                className="px-4 py-2 rounded-lg border text-sm border-dashed border-gray-400 text-gray-500 hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50 transition-colors cursor-pointer"
-              >
-                自定义输入...
-              </button>
+              {!hasCustomOption && (
+                <button
+                  onClick={() => setShowCustomInput(true)}
+                  className="px-4 py-2 rounded-lg border text-sm border-dashed border-gray-400 text-gray-500 hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50 transition-colors cursor-pointer"
+                >
+                  自定义输入...
+                </button>
+              )}
             </div>
             {showCustomInput && (
               <div className="flex gap-2 items-end">
