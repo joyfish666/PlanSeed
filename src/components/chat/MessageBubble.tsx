@@ -34,7 +34,7 @@ export function MessageBubble({ message, isStartMessage, onOptionSelect, onStart
     setTesting(true);
     try {
       const ok = await onStart?.();
-      if (ok) setSelected('测试模型连接正常，开始规划');
+      if (ok) setSelected('已测试模型连接正常，开始规划');
     } finally {
       setTesting(false);
     }
@@ -66,7 +66,7 @@ export function MessageBubble({ message, isStartMessage, onOptionSelect, onStart
 
   // Detect if this is the start message with the connection test button
   const isStartFlow = isStartMessage && options.some(
-    (opt) => opt.value === '测试模型连接正常，开始规划',
+    (opt) => opt.value === '已测试模型连接正常，开始规划',
   );
 
   return (
