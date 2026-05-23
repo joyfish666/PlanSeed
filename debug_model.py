@@ -5,7 +5,8 @@
   python debug_model.py <API_KEY> <API_ENDPOINT> <MODEL>
 
 示例：
-  python debug_model.py sk-xxx https://api.deepseek.com/v1 deepseek-chat
+  python debug_model.py sk-xxx https://api.deepseek.com deepseek-chat
+  python debug_model.py sk-xxx https://api.deepseek.com deepseek-v4-flash
   python debug_model.py sk-xxx https://api.openai.com/v1 gpt-4o-mini
 """
 
@@ -21,8 +22,7 @@ def test_model(api_key: str, api_endpoint: str, model: str) -> None:
     payload = json.dumps({
         "model": model,
         "messages": [
-            {"role": "system", "content": "你是一个测试助手，请用一句话回答。"},
-            {"role": "user", "content": "你好，请回复'模型调用成功'。"},
+            {"role": "user", "content": "请报告你的模型名称（model name）和版本号。只回答模型名称和版本，不要其他内容。例如：deepseek-chat / GPT-4o-mini / Claude 3.5 Sonnet 等。"},
         ],
         "stream": False,
     }).encode("utf-8")
