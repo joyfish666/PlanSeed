@@ -4,15 +4,18 @@ import { parseAIMessage } from '../../utils';
 
 interface MessageBubbleProps {
   message: Message;
+  isStartMessage?: boolean;
   onOptionSelect?: (value: string) => void;
+  onStart?: () => Promise<boolean>;
 }
 
-export function MessageBubble({ message, onOptionSelect }: MessageBubbleProps) {
+export function MessageBubble({ message, isStartMessage, onOptionSelect, onStart }: MessageBubbleProps) {
   const isUser = message.role === 'user';
   const parsed = isUser ? null : parseAIMessage(message.content);
 
   const [selected, setSelected] = useState<string | null>(null);
   const [showCustomInput, setShowCustomInput] = useState(false);
+  const [testing, setTesting] = useState(false);
   const [customValue, setCustomValue] = useState('');
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -24,6 +27,17 @@ export function MessageBubble({ message, onOptionSelect }: MessageBubbleProps) {
     if (selected) return;
     setSelected(value);
     onOptionSelect?.(value);
+  };
+
+  const handleStart = async () => {
+    if (selected || testing) return;
+    setTesting(true);
+    try {
+      const ok = await onStart?.();
+      if (ok) setSelected('测试模型连接正常，开始规划');
+    } finally {
+      setTesting(false);
+    }
   };
 
   const handleCustomSubmit = () => {
@@ -50,6 +64,11 @@ export function MessageBubble({ message, onOptionSelect }: MessageBubbleProps) {
     (opt) => opt.label.includes('自定义') || opt.label.includes('其他'),
   );
 
+  // Detect if this is the start message with the connection test button
+  const isStartFlow = isStartMessage && options.some(
+    (opt) => opt.value === '测试模型连接正常，开始规划',
+  );
+
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-3`}>
       <div className="max-w-[80%]">
@@ -64,8 +83,28 @@ export function MessageBubble({ message, onOptionSelect }: MessageBubbleProps) {
           <div className="whitespace-pre-wrap">{displayText}</div>
         </div>
 
-        {/* Mode 1: Select options */}
-        {mode === 'select' && !selected && (
+        {/* Start flow: single connection-test button */}
+        {isStartFlow && !selected && (
+          <div className="mt-3 ml-1">
+            <button
+              onClick={handleStart}
+              disabled={testing}
+              className="px-6 py-2.5 rounded-lg text-sm font-medium bg-blue-500 text-white hover:bg-blue-600 disabled:bg-blue-300 transition-colors cursor-pointer flex items-center gap-2"
+            >
+              {testing ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  正在检测连接...
+                </>
+              ) : (
+                '测试模型连接正常，开始规划'
+              )}
+            </button>
+          </div>
+        )}
+
+        {/* Mode 1: Select options (not start flow) */}
+        {mode === 'select' && !isStartFlow && !selected && (
           <div className="mt-2 ml-1 space-y-2">
             <div className="flex flex-wrap gap-2">
               {options.map((opt) => (

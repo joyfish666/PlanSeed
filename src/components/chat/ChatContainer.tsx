@@ -6,11 +6,16 @@ export function ChatContainer() {
   const messages = useAppStore((s) => s.messages);
   const isTyping = useAppStore((s) => s.isTyping);
   const sendMessage = useAppStore((s) => s.sendMessage);
+  const startWithConnectionTest = useAppStore((s) => s.startWithConnectionTest);
   const apiKey = useAppStore((s) => s.apiKey);
 
   return (
     <div className="flex flex-col h-full">
-      <MessageList messages={messages} isTyping={isTyping} />
+      <MessageList
+        messages={messages}
+        isTyping={isTyping}
+        onStart={startWithConnectionTest}
+      />
       <TextInput
         onSend={sendMessage}
         disabled={isTyping || !apiKey}

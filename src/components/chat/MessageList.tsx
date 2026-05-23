@@ -2,14 +2,14 @@ import { useEffect, useRef } from 'react';
 import { MessageBubble } from './MessageBubble';
 import type { Message } from '../../types';
 import { useAppStore } from '../../stores/useAppStore';
-import { WELCOME_PROMPT } from '../../prompts';
 
 interface MessageListProps {
   messages: Message[];
   isTyping: boolean;
+  onStart?: () => Promise<boolean>;
 }
 
-export function MessageList({ messages, isTyping }: MessageListProps) {
+export function MessageList({ messages, isTyping, onStart }: MessageListProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const sendMessage = useAppStore((s) => s.sendMessage);
 
@@ -23,14 +23,15 @@ export function MessageList({ messages, isTyping }: MessageListProps) {
         <div className="text-center text-gray-500 mt-20 space-y-4">
           <div className="text-4xl">🌱</div>
           <p className="text-lg font-medium text-gray-700">PlanSeed</p>
-          <p className="text-sm">{WELCOME_PROMPT}</p>
         </div>
       )}
-      {messages.map((msg) => (
+      {messages.map((msg, idx) => (
         <MessageBubble
           key={msg.id}
           message={msg}
+          isStartMessage={idx === 0 && msg.role === 'assistant'}
           onOptionSelect={(value) => sendMessage(value)}
+          onStart={onStart}
         />
       ))}
       {isTyping && (

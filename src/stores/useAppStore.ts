@@ -20,6 +20,7 @@ interface AppState {
   selectOption: (dimension: string, value: string | string[]) => void;
   generateDocument: () => Promise<void>;
   refreshPreview: () => Promise<void>;
+  startWithConnectionTest: () => Promise<boolean>;
   resetAll: () => void;
   setApiKey: (key: string) => void;
   setApiEndpoint: (endpoint: string) => void;
@@ -190,6 +191,28 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
   },
 
+  startWithConnectionTest: async () => {
+    const { apiKey, apiEndpoint, model, sendMessage } = get();
+    if (!apiKey) {
+      sendMessage('开始规划项目');
+      return false;
+    }
+
+    set({ isTyping: true });
+    try {
+      await aiService.testConnection({ apiKey, apiEndpoint, model });
+      set({ isTyping: false });
+      sendMessage('用户已确认模型连接正常，现在开始规划项目。请询问用户想做什么类型的项目，并提供常见项目类型供选择。');
+      return true;
+    } catch (err) {
+      set({ isTyping: false });
+      const msg = err instanceof Error ? err.message : String(err);
+      const addMessage = get().addMessage;
+      addMessage('assistant', `模型连接失败：${msg}\n\n请检查设置中的 API Key、API Endpoint 和模型名称是否正确，修改后重新检测。`);
+      return false;
+    }
+  },
+
   setApiKey: (key) => {
     localStorage.setItem('planseed_api_key', key);
     set({ apiKey: key });
@@ -228,7 +251,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       const addMessage = get().addMessage;
       addMessage(
         'assistant',
-        '你好！我是 PlanSeed，你的项目规划向导。\n\n我会通过几个简单的问题，帮你把脑海中的想法整理成一份清晰的项目规划文档。整个过程大概需要 5-10 分钟。\n\n请先点击右上角的「设置」按钮，检测模型连接是否正常，确认无误后再开始。\n\n准备好了吗？\n\n[OPTIONS:开始规划项目]',
+        '你好！我是 PlanSeed，你的项目规划向导。\n\n我会通过几个简单的问题，帮你把脑海中的想法整理成一份清晰的项目规划文档。整个过程大概需要 5-10 分钟。\n\n[OPTIONS:测试模型连接正常，开始规划]',
       );
     }
   },
