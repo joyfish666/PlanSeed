@@ -19,8 +19,18 @@ export function ExportBar() {
     setTimeout(() => setCopied(null), 2000);
   };
 
+  const handleDownload = () => {
+    const blob = new Blob([document], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = window.document.createElement('a');
+    a.href = url;
+    a.download = '项目规划文档.md';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
-    <div className="flex gap-2 p-3 border-t border-gray-200 bg-gray-50">
+    <div className="flex gap-2">
       <button
         onClick={handleCopyMarkdown}
         className="flex-1 px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
@@ -29,9 +39,15 @@ export function ExportBar() {
       </button>
       <button
         onClick={handleCopyPrompt}
-        className="flex-1 px-3 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors cursor-pointer"
+        className="flex-1 px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
       >
         {copied === 'prompt' ? '已复制 ✓' : '复制 AI Prompt'}
+      </button>
+      <button
+        onClick={handleDownload}
+        className="flex-1 px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+      >
+        下载 Markdown
       </button>
     </div>
   );
