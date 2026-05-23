@@ -19,6 +19,7 @@ interface AppState {
   sendMessage: (content: string) => Promise<void>;
   selectOption: (dimension: string, value: string | string[]) => void;
   generateDocument: () => Promise<void>;
+  refreshPreview: () => Promise<void>;
   setApiKey: (key: string) => void;
   setApiEndpoint: (endpoint: string) => void;
   setModel: (model: string) => void;
@@ -88,6 +89,20 @@ export const useAppStore = create<AppState>((set, get) => ({
       }
 
       addMessage('assistant', fullResponse);
+
+      // Update preview after each AI response
+      const { messages: updatedMessages, context: currentContext } = get();
+      if (updatedMessages.length >= 2) {
+        try {
+          const preview = await aiService.generatePreview(
+            updatedMessages.map((m) => ({ role: m.role, content: m.content })),
+            { apiKey, apiEndpoint, model, context: currentContext },
+          );
+          if (preview) set({ document: preview });
+        } catch {
+          // preview update failure is non-critical
+        }
+      }
     } catch (error) {
       addMessage('assistant', '抱歉，发生了错误。请检查 API 配置后重试。');
     } finally {
@@ -153,6 +168,24 @@ export const useAppStore = create<AppState>((set, get) => ({
       addMessage('assistant', '文档已生成！你可以在右侧预览区域查看，也可以导出为 Markdown 或 AI Prompt。');
     } catch {
       addMessage('assistant', '生成文档时出错，请重试。');
+    } finally {
+      set({ isGenerating: false });
+    }
+  },
+
+  refreshPreview: async () => {
+    const { messages, context, apiKey, apiEndpoint, model } = get();
+    if (!apiKey || messages.length < 2) return;
+
+    set({ isGenerating: true });
+    try {
+      const preview = await aiService.generatePreview(
+        messages.map((m) => ({ role: m.role, content: m.content })),
+        { apiKey, apiEndpoint, model, context },
+      );
+      if (preview) set({ document: preview });
+    } catch {
+      // non-critical
     } finally {
       set({ isGenerating: false });
     }

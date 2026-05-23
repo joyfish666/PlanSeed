@@ -67,6 +67,46 @@ export const aiService = {
     yield* streamResponse(response);
   },
 
+  async generatePreview(
+    messages: { role: string; content: string }[],
+    config: AIConfig,
+  ): Promise<string> {
+    const conversation = messages.map((m) => `${m.role === 'user' ? '用户' : 'AI'}：${m.content}`).join('\n\n');
+
+    const prompt = `以下是用户与 AI 的对话记录，请根据已收集到的信息，生成一份 Markdown 格式的项目规划文档预览。
+
+要求：
+- 仅包含已经明确的信息，不要编造未讨论的内容
+- 按以下结构组织：项目基本原则与约束、功能规范、技术栈推荐
+- 如果某个板块信息不足，写"（待补充）"
+- 不需要额外的说明文字，直接输出 Markdown
+
+对话记录：
+${conversation}`;
+
+    const response = await fetch(`${config.apiEndpoint}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${config.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: config.model,
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'user', content: prompt },
+        ],
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.choices?.[0]?.message?.content || '';
+  },
+
   async generateDocument(
     context: ProjectContext,
     config: AIConfig,
