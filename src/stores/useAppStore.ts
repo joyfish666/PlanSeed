@@ -258,7 +258,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       const addMessage = get().addMessage;
       addMessage(
         'assistant',
-        '你好！我是 PlanSeed，你的项目规划向导。\n\n我会通过几个简单的问题，帮你把脑海中的想法整理成一份清晰的项目规划文档。整个过程大概需要 5-10 分钟。\n\n请先在右上角「设置」中检测模型连接是否正常，确认无误后再继续。\n\n[OPTIONS:已测试模型连接正常，开始规划]',
+        '你好！我是 PlanSeed，你的项目规划向导。\n\n我会通过几个简单的问题，帮你把脑海中的想法整理成一份清晰的项目规划文档。整个过程大概需要 5-10 分钟。\n\n请先在右上角「设置」中进行模型参数填写，确认无误后再继续。\n\n[OPTIONS:已测试模型连接正常，开始规划]',
       );
     }
   },
