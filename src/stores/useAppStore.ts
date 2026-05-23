@@ -43,8 +43,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   document: '',
   isGenerating: false,
   apiKey: '',
-  apiEndpoint: 'https://api.openai.com/v1',
-  model: 'gpt-4o-mini',
+  apiEndpoint: 'https://api.deepseek.com/v1',
+  model: 'deepseek-chat',
 
   addMessage: (role, content, type = 'text') => {
     const message: Message = {
@@ -179,8 +179,8 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   loadConfig: () => {
     const apiKey = localStorage.getItem('planseed_api_key') || '';
-    const apiEndpoint = localStorage.getItem('planseed_api_endpoint') || 'https://api.openai.com/v1';
-    const model = localStorage.getItem('planseed_model') || 'gpt-4o-mini';
+    const apiEndpoint = localStorage.getItem('planseed_api_endpoint') || 'https://api.deepseek.com/v1';
+    const model = localStorage.getItem('planseed_model') || 'deepseek-chat';
     set({ apiKey, apiEndpoint, model });
   },
 }));
