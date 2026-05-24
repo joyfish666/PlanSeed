@@ -1,0 +1,24 @@
+{
+  "name": "planseed-mcp",
+  "version": "1.0.0",
+  "description": "PlanSeed MCP Server - Conversational project planning document generator",
+  "type": "module",
+  "bin": {
+    "planseed-mcp": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "typescript": "~5.7.0",
+    "@types/node": "^22.0.0"
+  },
+  "keywords": ["mcp", "planning", "document-generation", "ai"],
+  "license": "MIT"
+}

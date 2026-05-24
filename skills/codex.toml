@@ -1,0 +1,4 @@
+[mcp_servers.planseed]
+command = "node"
+args = ["./dist/index.js"]
+env = { PLANSEED_API_KEY = "your-api-key-here", PLANSEED_API_ENDPOINT = "https://api.deepseek.com", PLANSEED_MODEL = "deepseek-v4-flash" }

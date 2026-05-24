@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "planseed": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "C:/Users/wang/Desktop/vscode/PlanSeed/skills/dist/index.js"
+      ],
+      "env": {}
+    }
+  }
+}

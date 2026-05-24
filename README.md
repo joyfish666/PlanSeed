@@ -2,13 +2,25 @@
 
 > Conversational Project Planning Document Generator
 
-**PlanSeed** is a pure-frontend web application that guides non-technical users through a structured AI-driven dialogue to produce a professional Markdown project specification document.
+**PlanSeed** guides non-technical users through a structured AI-driven dialogue to produce a professional Markdown project specification document.
 
 **Every idea, no matter how simple, deserves to be taken seriously.**
 
 [中文文档](./README-zh.md) | [Development Documentation](./开发文档.md) | [Live Demo](https://joyfish666.github.io/PlanSeed/)
 
 ---
+
+## Two Ways to Use
+
+PlanSeed offers two usage modes:
+
+| Mode | Best For | Setup |
+|------|----------|-------|
+| **Web App** | Visual interface with real-time preview | Clone repo, `npm install`, `npm run dev` |
+| **Agent Skill** | Terminal/IDE users, works with Claude Code / Cursor / Codex | Clone repo, `cd skills`, `npm install && npm run build`, register MCP server |
+
+- **Web App**: Full-featured UI with chat interface, Markdown preview panel, and export options. Requires an API key for the AI model.
+- **Agent Skill**: Lightweight MCP server that runs inside your AI coding agent. No API key needed — reuses the host agent's model. See [skills/README.md](./skills/README.md) for setup.
 
 ## Overview
 
@@ -127,6 +139,7 @@ PlanSeed/
 | [README.md](./README.md) | English | Project overview and quick start (this file) |
 | [README-zh.md](./README-zh.md) | Chinese | Comprehensive Chinese documentation |
 | [开发文档.md](./开发文档.md) | Chinese | Technical development specification |
+| [skills/README.md](./skills/README.md) | EN/CN | Agent Skill setup and usage guide |
 
 ## Deployment
 

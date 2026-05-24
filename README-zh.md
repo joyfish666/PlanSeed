@@ -6,6 +6,18 @@
 
 ---
 
+## 两种使用方式
+
+PlanSeed 提供两种使用模式：
+
+| 模式 | 适合场景 | 启动方式 |
+|------|----------|----------|
+| **网页版** | 需要可视化界面、实时预览 | 克隆仓库，`npm install`，`npm run dev` |
+| **Agent Skill** | 终端/IDE 用户，配合 Claude Code / Cursor / Codex 使用 | 克隆仓库，`cd skills`，`npm install && npm run build`，注册 MCP 服务 |
+
+- **网页版**：完整 UI 界面，包含对话面板、Markdown 实时预览和导出功能。需要配置 AI 模型的 API Key。
+- **Agent Skill**：轻量级 MCP 服务，直接在 AI 编码助手中运行。无需 API Key，复用宿主 Agent 的模型能力。详见 [skills/README.md](./skills/README.md)。
+
 ## 一句话描述
 
 一款面向 AI 开发初学者的对话式项目规划文档生成器，采用纯前端技术实现。通过 AI 驱动的结构化引导，帮助非技术用户将模糊的想法转化为清晰、专业、可供下游 AI 编码工具或开发者参考的项目规划文档。
@@ -167,6 +179,7 @@ PlanSeed/
 | [README.md](./README.md) | English | 项目概览与快速开始 |
 | [README-zh.md](./README-zh.md) | 中文 | 完整中文文档（本文件） |
 | [开发文档.md](./开发文档.md) | 中文 | 技术开发规范 |
+| [skills/README.md](./skills/README.md) | EN/CN | Agent Skill 使用指南 |
 
 ## 部署方案
 
