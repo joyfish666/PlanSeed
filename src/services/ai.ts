@@ -1,10 +1,24 @@
 import { SYSTEM_PROMPT, START_PLANNING_HINT } from '../prompts';
 import { parseAIMessage } from '../utils';
+import type { Language } from '../i18n';
 
 interface AIConfig {
   apiKey: string;
   apiEndpoint: string;
   model: string;
+  language: Language;
+}
+
+/**
+ * Append a language directive to the (Chinese) behavioral system prompt so the
+ * model converses and produces documents in the user-selected language.
+ */
+function buildSystemPrompt(lang: Language): string {
+  const languageRule =
+    lang === 'en'
+      ? '\n\n【语言要求】请全程使用英语（English）与用户交流，包括提问、选项与文档输出。'
+      : '\n\n【语言要求】请全程使用中文与用户交流，包括提问、选项与文档输出。';
+  return `${SYSTEM_PROMPT}${languageRule}`;
 }
 
 interface AIMessage {
@@ -147,14 +161,14 @@ function stripDocumentNoise(text: string): string {
 
 export const aiService = {
   async testConnection(config: AIConfig): Promise<string> {
+    const introPrompt =
+      config.language === 'en' ? 'Introduce yourself in one short sentence.' : '用一句话简短地介绍你自己。';
     const response = await fetch(`${config.apiEndpoint}/chat/completions`, {
       method: 'POST',
       headers: authHeaders(config),
       body: JSON.stringify({
         model: config.model,
-        messages: [
-          { role: 'user', content: '用一句话简短地介绍你自己。' },
-        ],
+        messages: [{ role: 'user', content: introPrompt }],
         stream: false,
       }),
     });
@@ -171,7 +185,7 @@ export const aiService = {
       body: JSON.stringify({
         model: config.model,
         messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'system', content: buildSystemPrompt(config.language) },
           ...messages,
         ],
         stream: true,
@@ -189,7 +203,7 @@ export const aiService = {
       body: JSON.stringify({
         model: config.model,
         messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'system', content: buildSystemPrompt(config.language) },
           { role: 'user', content: buildDocumentPrompt(messages, kind) },
         ],
       }),

@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { generateId } from '../utils';
 import { aiService } from '../services/ai';
 import { START_PLANNING_HINT } from '../prompts';
+import { messages as i18nMessages, format, getDefaultLanguage, LANG_KEY } from '../i18n';
+import type { Language } from '../i18n';
 import type { Message } from '../types';
 
 interface AppState {
@@ -12,6 +14,7 @@ interface AppState {
   apiKey: string;
   apiEndpoint: string;
   model: string;
+  language: Language;
   addMessage: (role: Message['role'], content: string) => void;
   sendMessage: (content: string) => Promise<void>;
   refreshPreview: () => Promise<void>;
@@ -20,6 +23,7 @@ interface AppState {
   setApiKey: (key: string) => void;
   setApiEndpoint: (endpoint: string) => void;
   setModel: (model: string) => void;
+  setLanguage: (lang: Language) => void;
   loadConfig: () => void;
 }
 
@@ -31,6 +35,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   apiKey: '',
   apiEndpoint: 'https://api.deepseek.com',
   model: 'deepseek-v4-flash',
+  language: getDefaultLanguage(),
 
   addMessage: (role, content) => {
     const message: Message = {
@@ -43,7 +48,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   sendMessage: async (content: string) => {
-    const { addMessage, apiKey, apiEndpoint, model } = get();
+    const { addMessage, apiKey, apiEndpoint, model, language } = get();
     if (!apiKey) return;
 
     addMessage('user', content);
@@ -53,7 +58,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       const messages = get().messages.map((m) => ({ role: m.role, content: m.content }));
 
       let fullResponse = '';
-      for await (const chunk of aiService.sendMessage(messages, { apiKey, apiEndpoint, model })) {
+      for await (const chunk of aiService.sendMessage(messages, { apiKey, apiEndpoint, model, language })) {
         fullResponse += chunk;
       }
       addMessage('assistant', fullResponse);
@@ -65,7 +70,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         try {
           const preview = await aiService.generateDocument(
             updatedMessages.map((m) => ({ role: m.role, content: m.content })),
-            { apiKey, apiEndpoint, model },
+            { apiKey, apiEndpoint, model, language },
             'preview',
           );
           if (preview) set({ document: preview });
@@ -76,24 +81,21 @@ export const useAppStore = create<AppState>((set, get) => ({
     } catch (error) {
       console.error('[PlanSeed] sendMessage failed:', error);
       const detail = error instanceof Error ? error.message : String(error);
-      addMessage(
-        'assistant',
-        `抱歉，与模型通信时出错：${detail}\n\n请检查设置中的 API Key、Endpoint 和模型名称是否正确，修改后重试。`,
-      );
+      addMessage('assistant', format(i18nMessages[language].errors.sendFailed, { detail }));
     } finally {
       set({ isTyping: false });
     }
   },
 
   refreshPreview: async () => {
-    const { messages, apiKey, apiEndpoint, model } = get();
-    if (!apiKey || messages.length < 2) return;
+    const { messages: msgs, apiKey, apiEndpoint, model, language } = get();
+    if (!apiKey || msgs.length < 2) return;
 
     set({ isGenerating: true });
     try {
       const preview = await aiService.generateDocument(
-        messages.map((m) => ({ role: m.role, content: m.content })),
-        { apiKey, apiEndpoint, model },
+        msgs.map((m) => ({ role: m.role, content: m.content })),
+        { apiKey, apiEndpoint, model, language },
         'preview',
       );
       if (preview) set({ document: preview });
@@ -105,19 +107,19 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   startWithConnectionTest: async () => {
-    const { apiKey, apiEndpoint, model } = get();
+    const { apiKey, apiEndpoint, model, language } = get();
     if (!apiKey) return false;
 
     set({ isTyping: true });
     try {
-      await aiService.testConnection({ apiKey, apiEndpoint, model });
+      await aiService.testConnection({ apiKey, apiEndpoint, model, language });
 
       // Send hidden system instruction to AI without showing it in UI
       const messages = get().messages.map((m) => ({ role: m.role, content: m.content }));
       messages.push({ role: 'user', content: START_PLANNING_HINT });
 
       let fullResponse = '';
-      for await (const chunk of aiService.sendMessage(messages, { apiKey, apiEndpoint, model })) {
+      for await (const chunk of aiService.sendMessage(messages, { apiKey, apiEndpoint, model, language })) {
         fullResponse += chunk;
       }
 
@@ -127,7 +129,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       const msg = err instanceof Error ? err.message : String(err);
       get().addMessage(
         'assistant',
-        `模型连接失败：${msg}\n\n请检查设置中的 API Key、API Endpoint 和模型名称是否正确，修改后重新检测。`,
+        format(i18nMessages[get().language].errors.connectionFailed, { msg }),
       );
       return false;
     } finally {
@@ -150,11 +152,18 @@ export const useAppStore = create<AppState>((set, get) => ({
     set({ model });
   },
 
+  setLanguage: (lang) => {
+    localStorage.setItem(LANG_KEY, lang);
+    set({ language: lang });
+  },
+
   loadConfig: () => {
     const apiKey = localStorage.getItem('planseed_api_key') || '';
     const apiEndpoint = localStorage.getItem('planseed_api_endpoint') || 'https://api.deepseek.com';
     const model = localStorage.getItem('planseed_model') || 'deepseek-v4-flash';
-    set({ apiKey, apiEndpoint, model });
+    const storedLang = localStorage.getItem(LANG_KEY);
+    const language: Language = storedLang === 'en' || storedLang === 'zh' ? storedLang : getDefaultLanguage();
+    set({ apiKey, apiEndpoint, model, language });
   },
 
   resetAll: () => {

@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { MessageBubble } from './MessageBubble';
 import type { Message } from '../../types';
 import { useAppStore } from '../../stores/useAppStore';
+import { useT } from '../../i18n';
 
 interface MessageListProps {
   messages: Message[];
@@ -12,6 +13,7 @@ interface MessageListProps {
 export function MessageList({ messages, isTyping, onStart }: MessageListProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const sendMessage = useAppStore((s) => s.sendMessage);
+  const t = useT();
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
@@ -37,7 +39,7 @@ export function MessageList({ messages, isTyping, onStart }: MessageListProps) {
       {isTyping && (
         <div className="flex justify-start mb-3">
           <div className="bg-gray-100 rounded-2xl rounded-bl-md px-4 py-2.5 text-sm text-gray-500">
-            <span className="animate-pulse">正在思考...</span>
+            <span className="animate-pulse">{t.chat.typing}</span>
           </div>
         </div>
       )}

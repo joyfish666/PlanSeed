@@ -133,11 +133,5 @@ export const SYSTEM_PROMPT = `你是 PlanSeed，一位有耐心的项目规划�
 - 使用 Markdown 格式
 - 包含清晰的标题层级`;
 
-export const WELCOME_START_PROMPT = `你好！我是 PlanSeed，你的项目规划向导。
-
-我会通过几个简单的问题，帮你把脑海中的想法整理成一份清晰的项目规划文档。整个过程大概需要 5-10 分钟。
-
-[OPTIONS:已测试模型连接正常，开始规划]`;
-
 export const START_PLANNING_HINT =
   '用户已确认模型连接正常，现在开始规划项目。请直接询问用户想做一个什么样的项目，用具体项目实例引导用户（比如：日历应用、待办事项、博客、商城、聊天室等），不要停留在抽象的类型层面。';

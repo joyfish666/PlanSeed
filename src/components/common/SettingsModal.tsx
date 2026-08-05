@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useAppStore } from '../../stores/useAppStore';
 import { aiService } from '../../services/ai';
+import { useT, format } from '../../i18n';
 
 const KEY_MASK = '***';
 
@@ -13,9 +14,11 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
   const apiKey = useAppStore((s) => s.apiKey);
   const apiEndpoint = useAppStore((s) => s.apiEndpoint);
   const model = useAppStore((s) => s.model);
+  const language = useAppStore((s) => s.language);
   const setApiKey = useAppStore((s) => s.setApiKey);
   const setApiEndpoint = useAppStore((s) => s.setApiEndpoint);
   const setModel = useAppStore((s) => s.setModel);
+  const t = useT();
 
   // Track whether user has actually edited the key input (state, not ref,
   // so the helper text below updates correctly on every change).
@@ -59,7 +62,7 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
     const effectiveKey = keyModified ? key.trim() : apiKey;
 
     if (!effectiveKey) {
-      setTestResult({ ok: false, message: '请先填写 API Key' });
+      setTestResult({ ok: false, message: t.settings.needKey });
       return;
     }
     setTesting(true);
@@ -69,13 +72,14 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
         apiKey: effectiveKey,
         apiEndpoint: endpoint.trim() || 'https://api.deepseek.com',
         model: mdl.trim() || 'deepseek-v4-flash',
+        language,
       });
       setTestResult({ ok: true, message: response });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       setTestResult({
         ok: false,
-        message: `连接失败：${msg}\n\n请检查：\n- API Key 是否正确\n- API Endpoint 是否可访问\n- 模型名称是否有效`,
+        message: format(t.settings.testFailed, { msg }),
       });
     } finally {
       setTesting(false);
@@ -88,24 +92,24 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
       onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6 space-y-4">
-        <h2 className="text-lg font-semibold text-gray-800">API 设置</h2>
+        <h2 className="text-lg font-semibold text-gray-800">{t.settings.title}</h2>
         <div className="space-y-3">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">API Key</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t.settings.apiKeyLabel}</label>
             <input
               type={key === KEY_MASK ? 'text' : 'password'}
               value={key}
               onChange={(e) => handleKeyChange(e.target.value)}
               onFocus={handleKeyFocus}
-              placeholder={apiKey ? '已有缓存的 Key，点击输入框修改' : 'sk-...'}
+              placeholder={apiKey ? t.settings.keyPlaceholderCached : t.settings.keyPlaceholderNew}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
             />
             {apiKey && !keyModified && (
-              <p className="text-xs text-gray-400 mt-1">已有本地缓存的 API Key，点击输入框可修改</p>
+              <p className="text-xs text-gray-400 mt-1">{t.settings.keyCachedHint}</p>
             )}
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">API Endpoint</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t.settings.endpointLabel}</label>
             <input
               type="text"
               value={endpoint}
@@ -115,7 +119,7 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">模型</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t.settings.modelLabel}</label>
             <input
               type="text"
               value={mdl}
@@ -136,10 +140,10 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
             {testing ? (
               <>
                 <span className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
-                检测中...
+                {t.settings.testing}
               </>
             ) : (
-              '检测模型连接'
+              t.settings.test
             )}
           </button>
           {testResult && (
@@ -160,13 +164,13 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
             onClick={onClose}
             className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
           >
-            取消
+            {t.settings.cancel}
           </button>
           <button
             onClick={handleSave}
             className="px-4 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors cursor-pointer"
           >
-            保存
+            {t.settings.save}
           </button>
         </div>
       </div>

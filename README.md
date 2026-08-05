@@ -58,6 +58,9 @@ After document generation, users can request two types of review:
 ### Settings & Persistence
 API Key, Endpoint, and Model are stored in `localStorage`. The API Key is masked in the UI. Default provider: DeepSeek (`deepseek-v4-flash`).
 
+### Bilingual UI
+The interface supports **Chinese and English**. Click the **EN / 中文** button in the top-right corner to switch the UI language instantly. The choice is persisted in `localStorage`, and the AI conversation follows the selected language (welcome message, questions, option buttons, and generated documents). First-time visitors default to their browser language.
+
 ## Tech Stack
 
 | Category | Technology |

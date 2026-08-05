@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, type KeyboardEvent } from 'react';
+import { useT } from '../../i18n';
 
 interface TextInputProps {
   onSend: (content: string) => void;
@@ -6,9 +7,10 @@ interface TextInputProps {
   placeholder?: string;
 }
 
-export function TextInput({ onSend, disabled, placeholder = '输入你的回答...' }: TextInputProps) {
+export function TextInput({ onSend, disabled, placeholder }: TextInputProps) {
   const [value, setValue] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const t = useT();
 
   useEffect(() => {
     const el = textareaRef.current;
@@ -39,7 +41,7 @@ export function TextInput({ onSend, disabled, placeholder = '输入你的回答.
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={handleKeyDown}
         disabled={disabled}
-        placeholder={placeholder}
+        placeholder={placeholder ?? t.chat.placeholderInput}
         rows={3}
         className="flex-1 resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100 max-h-40 overflow-y-auto"
       />
@@ -48,7 +50,7 @@ export function TextInput({ onSend, disabled, placeholder = '输入你的回答.
         disabled={disabled || !value.trim()}
         className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors cursor-pointer"
       >
-        发送
+        {t.chat.send}
       </button>
     </div>
   );
