@@ -58,10 +58,10 @@ export const useAppStore = create<AppState>((set, get) => ({
       }
       addMessage('assistant', fullResponse);
 
-      // Auto-generate the preview only once (when no document exists yet).
-      // Later updates are done via the manual "刷新预览" button to keep API cost low.
-      const { messages: updatedMessages, document: currentDoc } = get();
-      if (updatedMessages.length >= 2 && !currentDoc) {
+      // Auto-update the live document preview after each AI response so the
+      // user can see how their latest choice / modification affects the document.
+      const { messages: updatedMessages } = get();
+      if (updatedMessages.length >= 2) {
         try {
           const preview = await aiService.generateDocument(
             updatedMessages.map((m) => ({ role: m.role, content: m.content })),

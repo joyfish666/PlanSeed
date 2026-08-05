@@ -43,7 +43,7 @@ After initial feature selection, the AI dynamically suggests up to 3 missing fea
 Tech stack recommendations are the last step, only after all features are confirmed. No technology layer is assumed — frontend, backend, databases, and middleware are recommended only when the project requires them. The AI autonomously selects candidates based on project needs rather than picking from a hardcoded list.
 
 ### Real-Time Document Preview
-A Markdown preview panel is generated automatically from the conversation (the first time a document is produced, then on demand to keep API usage low). Users can refresh it manually at any time. The preview uses `react-markdown` with GFM support (tables, strikethrough, task lists).
+A Markdown preview panel updates automatically after each AI response, so the document reflects the user's latest choices and modifications in real time. Users can also refresh it manually. The preview uses `react-markdown` with GFM support (tables, strikethrough, task lists).
 
 ### AI Review Mechanism
 After document generation, users can request two types of review:

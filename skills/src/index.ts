@@ -35,7 +35,7 @@ function formatContext(ctx: Readonly<SkillContext>): string {
 
 const server = new McpServer({
   name: "planseed-mcp",
-  version: "1.1.0",
+  version: "1.1.1",
 });
 
 // ── Tools ──────────────────────────────────────────────────────────────────────

@@ -1,6 +1,6 @@
 {
   "name": "planseed-mcp",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "PlanSeed MCP Server - Conversational project planning document generator",
   "type": "module",
   "bin": {

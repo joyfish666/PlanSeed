@@ -71,7 +71,7 @@ function App() {
 
       {/* Footer */}
       <footer className="px-4 py-2 text-center text-xs text-gray-400 bg-white border-t border-gray-200 shrink-0">
-        PlanSeed v1.1.0 · 再简单的想法，也值得被认真对待
+        PlanSeed v1.1.1 · 再简单的想法，也值得被认真对待
       </footer>
 
       {/* Settings Modal */}
