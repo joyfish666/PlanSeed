@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useAppStore } from '../../stores/useAppStore';
 import { aiService } from '../../services/ai';
 
@@ -17,8 +17,9 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
   const setApiEndpoint = useAppStore((s) => s.setApiEndpoint);
   const setModel = useAppStore((s) => s.setModel);
 
-  // Use ref to track whether user has actually edited the key input
-  const keyModifiedRef = useRef(false);
+  // Track whether user has actually edited the key input (state, not ref,
+  // so the helper text below updates correctly on every change).
+  const [keyModified, setKeyModified] = useState(false);
   const [key, setKey] = useState(apiKey ? KEY_MASK : '');
   const [endpoint, setEndpoint] = useState(apiEndpoint);
   const [mdl, setMdl] = useState(model);
@@ -26,14 +27,14 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
   const [testResult, setTestResult] = useState<{ ok: boolean; message: string } | null>(null);
 
   const handleKeyChange = useCallback((value: string) => {
-    keyModifiedRef.current = true;
+    setKeyModified(true);
     setKey(value);
   }, []);
 
   const handleKeyFocus = useCallback(() => {
     // When user focuses the masked input, clear it for editing
     if (key === KEY_MASK && apiKey) {
-      keyModifiedRef.current = true;
+      setKeyModified(true);
       setKey('');
     }
   }, [key, apiKey]);
@@ -41,8 +42,9 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
   if (!open) return null;
 
   const handleSave = () => {
-    // Only update apiKey if user actually modified it
-    if (keyModifiedRef.current) {
+    // Only overwrite the key if the user actually typed a new one —
+    // prevents accidentally wiping a cached key by focusing and saving.
+    if (keyModified && key.trim()) {
       setApiKey(key.trim());
     }
     setApiEndpoint(endpoint);
@@ -54,7 +56,7 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
     // Determine which key to use:
     // - User modified input -> use input value
     // - User didn't modify -> use cached store value
-    const effectiveKey = keyModifiedRef.current ? key.trim() : apiKey;
+    const effectiveKey = keyModified ? key.trim() : apiKey;
 
     if (!effectiveKey) {
       setTestResult({ ok: false, message: '请先填写 API Key' });
@@ -98,7 +100,7 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
               placeholder={apiKey ? '已有缓存的 Key，点击输入框修改' : 'sk-...'}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
             />
-            {apiKey && !keyModifiedRef.current && (
+            {apiKey && !keyModified && (
               <p className="text-xs text-gray-400 mt-1">已有本地缓存的 API Key，点击输入框可修改</p>
             )}
           </div>

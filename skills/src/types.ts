@@ -3,6 +3,8 @@ export interface SkillContext {
   projectType: string;
   coreFeatures: string[];
   confirmedFeatures: string[];
+  /** Tracks whether the user is mid-way through describing feature corrections */
+  featureStage: "collect" | "modifying";
   usageScenario: {
     devices: ("desktop" | "mobile" | "tablet")[];
     offlineSupport: boolean;
@@ -12,6 +14,8 @@ export interface SkillContext {
   techStack: {
     mode: "recommend" | "custom" | "team";
     selections: string[];
+    /** 0: ask tech stack, 1: awaiting choice after "帮我推荐", 2: ask project scale, 3: ask delivery rhythm, 4: done */
+    stage: number;
   };
   projectScale: "mvp" | "full";
   deliveryRhythm: "once" | "iterative";
@@ -43,23 +47,4 @@ export interface SkillDefinition {
    * @returns The prompt for the host LLM, updated context, and completion status
    */
   execute(userInput: string, context: SkillContext): SkillTurnResult;
-}
-
-export type MessageMode = "select" | "qa" | "none";
-
-export interface ParsedMessage {
-  mode: MessageMode;
-  options: { label: string; value: string }[];
-  displayText: string;
-  reviewPass?: "completeness" | "feasibility";
-}
-
-export interface PipelineRunner {
-  currentSkillId(): string;
-  currentSkillName(): string;
-  turn(userInput: string): SkillTurnResult;
-  getContext(): Readonly<SkillContext>;
-  remainingSkills(): string[];
-  reset(): void;
-  setContext(updates: Partial<SkillContext>): void;
 }

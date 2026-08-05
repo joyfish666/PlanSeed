@@ -133,26 +133,11 @@ export const SYSTEM_PROMPT = `你是 PlanSeed，一位有耐心的项目规划�
 - 使用 Markdown 格式
 - 包含清晰的标题层级`;
 
-export const WELCOME_PROMPT = `你好！我是 PlanSeed，你的项目规划向导。
+export const WELCOME_START_PROMPT = `你好！我是 PlanSeed，你的项目规划向导。
 
-我会通过几个简单的问题，帮你把脑海中的想法整理成一份清晰的项目规划文档。整个过程大概需要 5-10 分钟，准备好了吗？`;
+我会通过几个简单的问题，帮你把脑海中的想法整理成一份清晰的项目规划文档。整个过程大概需要 5-10 分钟。
 
-export const PROJECT_TYPE_PROMPT = `让我们开始规划你的项目！首先，你想做什么类型的应用？
+[OPTIONS:已测试模型连接正常，开始规划]`;
 
-请选择一个最接近的类型，或者描述你的想法：`;
-
-export const CORE_FEATURES_PROMPT = `很好！接下来，用户可以在你的应用里做什么？
-
-请选择所有你需要的功能，也可以补充其他功能：`;
-
-export const USAGE_SCENARIO_PROMPT = `了解了！现在让我们确认一下使用场景：`;
-
-export const TECH_PREFERENCE_PROMPT = `功能已确认完毕！最后一步，关于技术选型：`;
-
-export const PROJECT_SCALE_PROMPT = `最后几个问题，关于项目的规模和节奏：`;
-
-export const AI_FOLLOWUP_PROMPT = `基于你的回答，我有几个补充问题想确认：`;
-
-export const GENERATING_PROMPT = `太好了！我现在开始为你生成项目规划文档...`;
-
-export const REVIEW_PROMPT = `文档已生成，让我帮你检查一下是否有遗漏：`;
+export const START_PLANNING_HINT =
+  '用户已确认模型连接正常，现在开始规划项目。请直接询问用户想做一个什么样的项目，用具体项目实例引导用户（比如：日历应用、待办事项、博客、商城、聊天室等），不要停留在抽象的类型层面。';

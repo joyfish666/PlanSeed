@@ -22,6 +22,7 @@ export function createEmptyContext(): SkillContext {
     projectType: "",
     coreFeatures: [],
     confirmedFeatures: [],
+    featureStage: "collect",
     usageScenario: {
       devices: [],
       offlineSupport: false,
@@ -31,6 +32,7 @@ export function createEmptyContext(): SkillContext {
     techStack: {
       mode: "recommend",
       selections: [],
+      stage: 0,
     },
     projectScale: "mvp",
     deliveryRhythm: "iterative",
@@ -91,34 +93,4 @@ export function createPipelineRunner(): PipelineRunner {
       context = { ...context, ...updates };
     },
   };
-}
-
-/**
- * Run the entire pipeline headless (non-interactive).
- * `getInput` is called with (skillId, prompt) and should return user input.
- */
-export function runPipelineHeadless(
-  getInput: (skillId: string, prompt: string) => string,
-): { document: string; context: SkillContext } {
-  const runner = createPipelineRunner();
-
-  // Bootstrap
-  let skillId = runner.currentSkillId();
-  let result = runner.turn("");
-  let userInput = getInput(skillId, result.prompt);
-
-  while (true) {
-    skillId = runner.currentSkillId();
-    result = runner.turn(userInput);
-
-    if (skillId === "document-generator") {
-      return { document: result.prompt, context: runner.getContext() };
-    }
-
-    if (skillId === "review" && result.isComplete) {
-      return { document: "", context: runner.getContext() };
-    }
-
-    userInput = getInput(skillId, result.prompt);
-  }
 }

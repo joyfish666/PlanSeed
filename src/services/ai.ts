@@ -1,4 +1,5 @@
-import { SYSTEM_PROMPT } from '../prompts';
+import { SYSTEM_PROMPT, START_PLANNING_HINT } from '../prompts';
+import { parseAIMessage } from '../utils';
 
 interface AIConfig {
   apiKey: string;
@@ -6,9 +7,29 @@ interface AIConfig {
   model: string;
 }
 
+interface AIMessage {
+  role: string;
+  content: string;
+}
+
+export type DocumentKind = 'preview' | 'final';
+
+function authHeaders(config: AIConfig): Record<string, string> {
+  return {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${config.apiKey}`,
+  };
+}
+
+async function throwIfNotOk(response: Response): Promise<void> {
+  if (response.ok) return;
+  const body = await response.text().catch(() => '');
+  throw new Error(`API error ${response.status}: ${body.slice(0, 300) || response.statusText}`);
+}
+
 async function* streamResponse(response: Response): AsyncGenerator<string> {
   const reader = response.body?.getReader();
-  if (!reader) return;
+  if (!reader) throw new Error('Response body is empty');
   const decoder = new TextDecoder();
   let buffer = '';
 
@@ -35,6 +56,55 @@ async function* streamResponse(response: Response): AsyncGenerator<string> {
       }
     }
   }
+}
+
+/**
+ * Build a clean conversation transcript for document generation:
+ * strips UI markers ([OPTIONS:...], [Q&A], [REVIEW_PASS:...]) and internal
+ * instructions (START_PLANNING_HINT) so they never leak into the document.
+ */
+function buildConversationForDocument(messages: AIMessage[]): string {
+  return messages
+    .filter((m) => m.content !== START_PLANNING_HINT)
+    .map((m) => {
+      const content = m.role === 'assistant' ? parseAIMessage(m.content).displayText : m.content;
+      return `${m.role === 'user' ? '用户' : 'AI'}：${content}`;
+    })
+    .join('\n\n');
+}
+
+const DOC_FORMAT_RULES = `严格格式要求（违反即失败）：
+- 第一个字符必须是 # 标题，不要以任何文字开头
+- 最后一个字符必须是文档内容，不要以任何总结或告别语结尾
+- 禁止出现"好的"、"以下是"、"以上是"、"希望"、"如果需要"等任何对话性文字
+- 输出纯 Markdown 文档，不要包含任何元说明`;
+
+function buildDocumentPrompt(messages: AIMessage[], kind: DocumentKind): string {
+  const conversation = buildConversationForDocument(messages);
+
+  const header =
+    kind === 'preview'
+      ? `以下是用户与 AI 的对话记录，请根据已收集到的信息，生成一份 Markdown 格式的项目规划文档预览。
+
+要求：
+- 仅包含已经明确的信息，不要编造未讨论的内容
+- 按以下结构组织：项目基本原则与约束、功能规范、技术栈推荐
+- 如果某个板块信息不足，写"（待补充）"`
+      : `以下是用户与 AI 的完整对话记录，请从中提取所有已确认的项目信息，生成一份完整的项目规划文档。
+
+要求：
+- 从对话中提取所有明确的信息，不要遗漏任何用户确认过的内容
+- 按以下结构生成 Markdown 文档：
+  1. 项目基本原则与约束
+  2. 功能规范（含用户故事和验收标准）
+  3. 技术栈推荐（含版本备注）`;
+
+  return `${header}
+
+${DOC_FORMAT_RULES}
+
+对话记录：
+${conversation}`;
 }
 
 /**
@@ -79,10 +149,7 @@ export const aiService = {
   async testConnection(config: AIConfig): Promise<string> {
     const response = await fetch(`${config.apiEndpoint}/chat/completions`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${config.apiKey}`,
-      },
+      headers: authHeaders(config),
       body: JSON.stringify({
         model: config.model,
         messages: [
@@ -92,25 +159,15 @@ export const aiService = {
       }),
     });
 
-    if (!response.ok) {
-      const errorBody = await response.text().catch(() => '');
-      throw new Error(`HTTP ${response.status}: ${errorBody || response.statusText}`);
-    }
-
+    await throwIfNotOk(response);
     const data = await response.json();
     return data.choices?.[0]?.message?.content || '（模型未返回内容）';
   },
 
-  async *sendMessage(
-    messages: { role: string; content: string }[],
-    config: AIConfig,
-  ): AsyncGenerator<string> {
+  async *sendMessage(messages: AIMessage[], config: AIConfig): AsyncGenerator<string> {
     const response = await fetch(`${config.apiEndpoint}/chat/completions`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${config.apiKey}`,
-      },
+      headers: authHeaders(config),
       body: JSON.stringify({
         model: config.model,
         messages: [
@@ -121,101 +178,24 @@ export const aiService = {
       }),
     });
 
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
-    }
-
+    await throwIfNotOk(response);
     yield* streamResponse(response);
   },
 
-  async generatePreview(
-    messages: { role: string; content: string }[],
-    config: AIConfig,
-  ): Promise<string> {
-    const conversation = messages.map((m) => `${m.role === 'user' ? '用户' : 'AI'}：${m.content}`).join('\n\n');
-
-    const prompt = `以下是用户与 AI 的对话记录，请根据已收集到的信息，生成一份 Markdown 格式的项目规划文档预览。
-
-要求：
-- 仅包含已经明确的信息，不要编造未讨论的内容
-- 按以下结构组织：项目基本原则与约束、功能规范、技术栈推荐
-- 如果某个板块信息不足，写"（待补充）"
-
-严格格式要求（违反即失败）：
-- 第一个字符必须是 # 标题，不要以任何文字开头
-- 最后一个字符必须是文档内容，不要以任何总结或告别语结尾
-- 禁止出现"好的"、"以下是"、"以上是"、"希望"、"如果需要"等任何对话性文字
-- 输出纯 Markdown 文档，不要包含任何元说明
-
-对话记录：
-${conversation}`;
-
+  async generateDocument(messages: AIMessage[], config: AIConfig, kind: DocumentKind = 'final'): Promise<string> {
     const response = await fetch(`${config.apiEndpoint}/chat/completions`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${config.apiKey}`,
-      },
+      headers: authHeaders(config),
       body: JSON.stringify({
         model: config.model,
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: prompt },
+          { role: 'user', content: buildDocumentPrompt(messages, kind) },
         ],
       }),
     });
 
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return stripDocumentNoise(data.choices?.[0]?.message?.content || '');
-  },
-
-  async generateDocument(
-    messages: { role: string; content: string }[],
-    config: AIConfig,
-  ): Promise<string> {
-    const conversation = messages.map((m) => `${m.role === 'user' ? '用户' : 'AI'}：${m.content}`).join('\n\n');
-
-    const prompt = `以下是用户与 AI 的完整对话记录，请从中提取所有已确认的项目信息，生成一份完整的项目规划文档。
-
-要求：
-- 从对话中提取所有明确的信息，不要遗漏任何用户确认过的内容
-- 按以下结构生成 Markdown 文档：
-  1. 项目基本原则与约束
-  2. 功能规范（含用户故事和验收标准）
-  3. 技术栈推荐（含版本备注）
-
-严格格式要求（违反即失败）：
-- 第一个字符必须是 # 标题，不要以任何文字开头
-- 最后一个字符必须是文档内容，不要以任何总结或告别语结尾
-- 禁止出现"好的"、"以下是"、"以上是"、"希望"、"如果需要"等任何对话性文字
-- 输出纯 Markdown 文档，不要包含任何元说明
-
-对话记录：
-${conversation}`;
-
-    const response = await fetch(`${config.apiEndpoint}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${config.apiKey}`,
-      },
-      body: JSON.stringify({
-        model: config.model,
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: prompt },
-        ],
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
-    }
-
+    await throwIfNotOk(response);
     const data = await response.json();
     return stripDocumentNoise(data.choices?.[0]?.message?.content || '');
   },

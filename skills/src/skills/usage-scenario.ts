@@ -49,7 +49,7 @@ export const usageScenarioSkill: SkillDefinition = {
     }
 
     if (scenario.offlineSupport === false && userInput && !scenario.targetUsers) {
-      scenario.offlineSupport = userInput.includes("需要");
+      scenario.offlineSupport = userInput.includes("需要") && !userInput.includes("不需要");
       ctx.usageScenario = scenario;
 
       return {
@@ -75,7 +75,7 @@ export const usageScenarioSkill: SkillDefinition = {
       ctx.usageScenario = scenario;
 
       return {
-        prompt: `用户规模：${userInput}。\n\n使用场景收集完毕。请进入技术栈推荐阶段。\n\n请根据项目需求，推荐技术栈。使用 [OPTIONS:...] 提供多个选项，每条消息只问一个问题。\n\n还需要询问项目规模（MVP vs 完整产品）和交付节奏（一次性 vs 迭代式）。`,
+        prompt: `用户规模：${userInput}。\n\n使用场景收集完毕。\n\n请根据项目需求推荐技术栈。\n\n核心原则：需求驱动，按需推荐。不预设任何技术层必须存在。纯客户端项目只推荐前端技术栈；需要服务端能力的项目按需推荐后端、数据库等。\n\n使用 [OPTIONS:...] 提供多个技术选项，让用户选择，每个选项前简要说明特点。必须包含选项「帮我推荐一个合适的」。\n\n每条消息只问一个问题。`,
         context: ctx,
         isComplete: true,
       };

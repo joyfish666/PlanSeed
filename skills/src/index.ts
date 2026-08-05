@@ -35,7 +35,7 @@ function formatContext(ctx: Readonly<SkillContext>): string {
 
 const server = new McpServer({
   name: "planseed-mcp",
-  version: "1.0.0",
+  version: "1.1.0",
 });
 
 // ── Tools ──────────────────────────────────────────────────────────────────────
@@ -83,13 +83,6 @@ server.tool(
     }
 
     const result = runner.turn(message);
-
-    // Capture document if generated
-    if (runner.currentSkillId() === "review" || runner.currentSkillId() === "document-generator") {
-      if (result.prompt.includes("#")) {
-        generatedDocument = result.prompt;
-      }
-    }
 
     return {
       content: [
@@ -145,13 +138,27 @@ server.tool(
 );
 
 server.tool(
+  "save_document",
+  "Save the generated project planning document so it can be retrieved later via get_document. Call this with the full Markdown content whenever the document is produced or modified.",
+  {
+    document: z.string().describe("The full Markdown document content"),
+  },
+  async ({ document }) => {
+    generatedDocument = document;
+    return {
+      content: [{ type: "text" as const, text: "Document saved. Use get_document to retrieve it." }],
+    };
+  },
+);
+
+server.tool(
   "get_document",
   "Get the generated project planning document.",
   {},
   async () => {
     if (!generatedDocument) {
       return {
-        content: [{ type: "text" as const, text: "No document generated yet. Complete the planning session first." }],
+        content: [{ type: "text" as const, text: "No document saved yet. Generate the document and call save_document first." }],
       };
     }
     return {

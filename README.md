@@ -43,7 +43,7 @@ After initial feature selection, the AI dynamically suggests up to 3 missing fea
 Tech stack recommendations are the last step, only after all features are confirmed. No technology layer is assumed — frontend, backend, databases, and middleware are recommended only when the project requires them. The AI autonomously selects candidates based on project needs rather than picking from a hardcoded list.
 
 ### Real-Time Document Preview
-A Markdown preview panel updates automatically after each AI response. Users can also manually refresh. The preview uses `react-markdown` with GFM support (tables, strikethrough, task lists).
+A Markdown preview panel is generated automatically from the conversation (the first time a document is produced, then on demand to keep API usage low). Users can refresh it manually at any time. The preview uses `react-markdown` with GFM support (tables, strikethrough, task lists).
 
 ### AI Review Mechanism
 After document generation, users can request two types of review:
@@ -117,7 +117,7 @@ PlanSeed/
 │   │   ├── chat/            # ChatContainer, MessageList, MessageBubble, TextInput
 │   │   ├── preview/         # PreviewPanel, MarkdownRenderer
 │   │   ├── export/          # ExportBar
-│   │   └── common/          # SettingsModal, LoadingIndicator
+│   │   └── common/          # SettingsModal
 │   ├── stores/              # Zustand store (useAppStore)
 │   ├── services/            # AI API service (aiService)
 │   ├── prompts/             # System prompt and template constants
@@ -140,6 +140,7 @@ PlanSeed/
 | [README-zh.md](./README-zh.md) | Chinese | Comprehensive Chinese documentation |
 | [开发文档.md](./开发文档.md) | Chinese | Technical development specification |
 | [skills/README.md](./skills/README.md) | EN/CN | Agent Skill setup and usage guide |
+| [项目交接文档.md](./项目交接文档.md) | Chinese | Handover doc: current state, pitfalls, next steps |
 
 ## Deployment
 

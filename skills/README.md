@@ -115,12 +115,12 @@ At each stage, the skill presents numbered options. You can:
 
 ### After Document Generation
 
-Once the document is generated, you can:
+The document is persisted by the host agent via the `save_document` tool and can be retrieved any time with `get_document`. After the document is generated, you can:
 
 - **Review completeness** - Check for gaps in the specification
 - **Review feasibility** - Assess technical complexity and timeline
 - **Save document** - Write `PROJECT_PLAN.md` to your current working directory
-- **Modify** - Adjust the document based on feedback
+- **Modify** - Adjust the document based on feedback (the updated document should be re-saved with `save_document`)
 - **Finish** - End the session and optionally start development
 
 ## Architecture
@@ -166,6 +166,7 @@ interface SkillTurnResult {
 | `start_planning` | Start a new planning session |
 | `send_message` | Send user input to the current skill |
 | `get_planning_context` | Get collected project information |
+| `save_document` | Persist the generated Markdown document |
 | `get_document` | Get the generated Markdown document |
 | `reset_planning` | Reset and start over |
 | `list_skills` | List all available skills in the pipeline |
@@ -196,17 +197,10 @@ skills/
 │   │   ├── document-generator.ts  # Markdown document generation
 │   │   └── review.ts              # Completeness and feasibility review
 │   ├── prompts/
-│   │   ├── base-persona.ts        # Shared behavioral rules
-│   │   ├── project-type.ts        # Project type prompt template
-│   │   ├── core-features.ts       # Core features prompt template
-│   │   ├── feature-confirmation.ts
-│   │   ├── usage-scenario.ts
-│   │   ├── tech-stack.ts
-│   │   └── review.ts
+│   │   └── base-persona.ts        # Shared behavioral rules
 │   ├── index.ts                   # MCP server entry point
 │   ├── pipeline.ts                # Pipeline runner
-│   ├── types.ts                   # TypeScript interfaces
-│   └── message-parser.ts          # Option/Q&A marker parser
+│   └── types.ts                   # TypeScript interfaces
 ├── package.json
 ├── tsconfig.json
 └── dist/                          # Compiled output (auto-generated)
@@ -230,7 +224,7 @@ npm run dev
 
 1. Create `src/skills/my-skill.ts` implementing `SkillDefinition`
 2. Add the skill to the `PIPELINE` array in `src/pipeline.ts`
-3. Optionally create a prompt template in `src/prompts/`
+3. Reuse or extend the shared persona in `src/prompts/base-persona.ts` if needed
 4. Rebuild with `npm run build`
 
 ## Troubleshooting
@@ -304,6 +298,7 @@ claude mcp add planseed -s user -- node /你的绝对路径/PlanSeed/skills/dist
 | `start_planning` | 开始新的规划会话 |
 | `send_message` | 发送用户输入到当前技能 |
 | `get_planning_context` | 获取已收集的项目信息 |
+| `save_document` | 保存生成的 Markdown 文档 |
 | `get_document` | 获取生成的 Markdown 文档 |
 | `reset_planning` | 重置并重新开始 |
 | `list_skills` | 列出所有可用技能 |

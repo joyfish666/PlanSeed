@@ -3,13 +3,14 @@ import { ChatContainer } from './components/chat/ChatContainer';
 import { PreviewPanel } from './components/preview/PreviewPanel';
 import { SettingsModal } from './components/common/SettingsModal';
 import { useAppStore } from './stores/useAppStore';
+import { WELCOME_START_PROMPT } from './prompts';
 
 function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [mobileTab, setMobileTab] = useState<'chat' | 'preview'>('chat');
   const loadConfig = useAppStore((s) => s.loadConfig);
   const apiKey = useAppStore((s) => s.apiKey);
-  const setCurrentStep = useAppStore((s) => s.setCurrentStep);
+  const messages = useAppStore((s) => s.messages);
   const addMessage = useAppStore((s) => s.addMessage);
 
   useEffect(() => {
@@ -17,14 +18,10 @@ function App() {
   }, [loadConfig]);
 
   useEffect(() => {
-    if (apiKey) {
-      setCurrentStep('project_type');
-      addMessage(
-        'assistant',
-        '你好！我是 PlanSeed，你的项目规划向导。\n\n我会通过几个简单的问题，帮你把脑海中的想法整理成一份清晰的项目规划文档。整个过程大概需要 5-10 分钟。\n\n请先在右上角「设置」中进行模型参数填写，确认无误后再继续。\n\n[OPTIONS:已测试模型连接正常，开始规划]',
-      );
+    if (apiKey && messages.length === 0) {
+      addMessage('assistant', WELCOME_START_PROMPT);
     }
-  }, [apiKey]);
+  }, [apiKey, messages.length, addMessage]);
 
   return (
     <div className="h-screen flex flex-col bg-gray-50">
@@ -74,7 +71,7 @@ function App() {
 
       {/* Footer */}
       <footer className="px-4 py-2 text-center text-xs text-gray-400 bg-white border-t border-gray-200 shrink-0">
-        PlanSeed v1.0.0 · 再简单的想法，也值得被认真对待
+        PlanSeed v1.1.0 · 再简单的想法，也值得被认真对待
       </footer>
 
       {/* Settings Modal */}

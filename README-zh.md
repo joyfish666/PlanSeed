@@ -66,8 +66,8 @@ AI 以选择题和开放式提问相结合的方式，逐步引导用户明确�
 ### 4. 实时文档预览
 对话过程中，右侧预览面板同步展示 Markdown 文档：
 
-- 每次 AI 响应后自动更新预览
-- 支持手动刷新
+- 首次产出文档后自动生成预览（为控制 API 调用成本，默认仅在文档为空时自动生成一次）
+- 支持随时手动刷新预览
 - 完整 GFM 支持（表格、删除线、任务列表等）
 - 使用 `react-markdown` + `remark-gfm` 渲染
 
@@ -157,7 +157,7 @@ PlanSeed/
 │   │   ├── chat/            # 对话组件（ChatContainer, MessageList, MessageBubble, TextInput）
 │   │   ├── preview/         # 预览组件（PreviewPanel, MarkdownRenderer）
 │   │   ├── export/          # 导出组件（ExportBar）
-│   │   └── common/          # 通用组件（SettingsModal, LoadingIndicator）
+│   │   └── common/          # 通用组件（SettingsModal）
 │   ├── stores/              # Zustand 状态管理（useAppStore）
 │   ├── services/            # AI API 服务（aiService）
 │   ├── prompts/             # 系统提示词与模板常量
@@ -180,6 +180,7 @@ PlanSeed/
 | [README-zh.md](./README-zh.md) | 中文 | 完整中文文档（本文件） |
 | [开发文档.md](./开发文档.md) | 中文 | 技术开发规范 |
 | [skills/README.md](./skills/README.md) | EN/CN | Agent Skill 使用指南 |
+| [项目交接文档.md](./项目交接文档.md) | 中文 | 交接文档：现状、踩坑记录、下一步 |
 
 ## 部署方案
 
