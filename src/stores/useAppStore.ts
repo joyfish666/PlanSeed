@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { generateId } from '../utils';
 import { aiService } from '../services/ai';
 import { START_PLANNING_HINT } from '../prompts';
-import { messages as i18nMessages, format, getDefaultLanguage, LANG_KEY } from '../i18n';
+import { messages as i18nMessages, format, getDefaultLanguage, LANG_KEY, buildWelcomePrompt } from '../i18n';
 import type { Language } from '../i18n';
 import type { Message } from '../types';
 
@@ -15,7 +15,10 @@ interface AppState {
   apiEndpoint: string;
   model: string;
   language: Language;
+  /** id of the injected welcome message (for re-translation on language switch) */
+  welcomeMessageId: string | null;
   addMessage: (role: Message['role'], content: string) => void;
+  addWelcomeMessage: (lang: Language) => void;
   sendMessage: (content: string) => Promise<void>;
   refreshPreview: () => Promise<void>;
   startWithConnectionTest: () => Promise<boolean>;
@@ -36,6 +39,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   apiEndpoint: 'https://api.deepseek.com',
   model: 'deepseek-v4-flash',
   language: getDefaultLanguage(),
+  welcomeMessageId: null,
 
   addMessage: (role, content) => {
     const message: Message = {
@@ -45,6 +49,20 @@ export const useAppStore = create<AppState>((set, get) => ({
       timestamp: Date.now(),
     };
     set((state) => ({ messages: [...state.messages, message] }));
+  },
+
+  addWelcomeMessage: (lang) => {
+    const id = generateId();
+    const message: Message = {
+      id,
+      role: 'assistant',
+      content: buildWelcomePrompt(lang),
+      timestamp: Date.now(),
+    };
+    set((state) => ({
+      welcomeMessageId: id,
+      messages: [...state.messages, message],
+    }));
   },
 
   sendMessage: async (content: string) => {
@@ -155,6 +173,16 @@ export const useAppStore = create<AppState>((set, get) => ({
   setLanguage: (lang) => {
     localStorage.setItem(LANG_KEY, lang);
     set({ language: lang });
+
+    // Re-translate the pending welcome message so a fresh arrival always sees
+    // an actionable welcome in the current language (before the conversation starts).
+    const { welcomeMessageId, messages: msgs } = get();
+    if (welcomeMessageId && msgs.length === 1) {
+      const content = buildWelcomePrompt(lang);
+      set((state) => ({
+        messages: state.messages.map((m) => (m.id === welcomeMessageId ? { ...m, content } : m)),
+      }));
+    }
   },
 
   loadConfig: () => {
@@ -169,6 +197,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   resetAll: () => {
     set({
       messages: [],
+      welcomeMessageId: null,
       isTyping: false,
       document: '',
       isGenerating: false,

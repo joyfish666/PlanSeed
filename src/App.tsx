@@ -3,7 +3,7 @@ import { ChatContainer } from './components/chat/ChatContainer';
 import { PreviewPanel } from './components/preview/PreviewPanel';
 import { SettingsModal } from './components/common/SettingsModal';
 import { useAppStore } from './stores/useAppStore';
-import { buildWelcomePrompt, useT } from './i18n';
+import { useT } from './i18n';
 
 function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -11,7 +11,7 @@ function App() {
   const loadConfig = useAppStore((s) => s.loadConfig);
   const apiKey = useAppStore((s) => s.apiKey);
   const messages = useAppStore((s) => s.messages);
-  const addMessage = useAppStore((s) => s.addMessage);
+  const addWelcomeMessage = useAppStore((s) => s.addWelcomeMessage);
   const language = useAppStore((s) => s.language);
   const setLanguage = useAppStore((s) => s.setLanguage);
   const t = useT();
@@ -22,9 +22,9 @@ function App() {
 
   useEffect(() => {
     if (apiKey && messages.length === 0) {
-      addMessage('assistant', buildWelcomePrompt(language));
+      addWelcomeMessage(language);
     }
-  }, [apiKey, messages.length, addMessage, language]);
+  }, [apiKey, messages.length, addWelcomeMessage, language]);
 
   return (
     <div className="h-screen flex flex-col bg-gray-50">

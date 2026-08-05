@@ -82,7 +82,7 @@ export const messages: Record<Language, AppMessages> = {
       settings: '设置',
       tabChat: '对话',
       tabPreview: '预览',
-      footer: 'PlanSeed v1.2.0 · 再简单的想法，也值得被认真对待',
+      footer: 'PlanSeed v1.2.1 · 再简单的想法，也值得被认真对待',
     },
     chat: {
       placeholderNoKey: '请先在设置中配置 API Key...',
@@ -141,7 +141,7 @@ export const messages: Record<Language, AppMessages> = {
       settings: 'Settings',
       tabChat: 'Chat',
       tabPreview: 'Preview',
-      footer: 'PlanSeed v1.2.0 · Every idea, no matter how simple, deserves to be taken seriously.',
+      footer: 'PlanSeed v1.2.1 · Every idea, no matter how simple, deserves to be taken seriously.',
     },
     chat: {
       placeholderNoKey: 'Configure an API Key in Settings first...',
