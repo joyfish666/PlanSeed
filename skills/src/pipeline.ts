@@ -25,7 +25,7 @@ export function createEmptyContext(): SkillContext {
     featureStage: "collect",
     usageScenario: {
       devices: [],
-      offlineSupport: false,
+      offlineSupport: null,
       targetUsers: "",
       userScale: "",
     },

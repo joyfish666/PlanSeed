@@ -18,18 +18,24 @@ export const usageScenarioSkill: SkillDefinition = {
       ];
     }
 
-    // Determine which sub-field to collect next
+    // 1) 收集使用设备（desktop / mobile / tablet）
     if (scenario.devices.length === 0) {
       if (userInput) {
-        scenario.devices = userInput.includes("桌面") && userInput.includes("移动")
-          ? ["desktop", "mobile"]
-          : userInput.includes("桌面")
-            ? ["desktop"]
-            : userInput.includes("移动")
-              ? ["mobile"]
-              : userInput.includes("平板")
-                ? ["tablet"]
-                : ["desktop"];
+        const hasDesktop = /桌面|电脑|PC|pc/.test(userInput);
+        const hasMobile = /移动|手机/.test(userInput);
+        const hasTablet = userInput.includes("平板");
+
+        if (hasDesktop && hasMobile) {
+          scenario.devices = ["desktop", "mobile"];
+        } else if (hasMobile) {
+          scenario.devices = ["mobile"];
+        } else if (hasDesktop) {
+          scenario.devices = ["desktop"];
+        } else if (hasTablet) {
+          scenario.devices = ["tablet"];
+        } else {
+          scenario.devices = ["desktop"];
+        }
       }
 
       if (scenario.devices.length > 0) {
@@ -48,7 +54,16 @@ export const usageScenarioSkill: SkillDefinition = {
       };
     }
 
-    if (scenario.offlineSupport === false && userInput && !scenario.targetUsers) {
+    // 2) 收集离线支持（offlineSupport === null 表示尚未询问）
+    if (scenario.offlineSupport === null) {
+      if (!userInput) {
+        return {
+          prompt: `请询问用户：是否需要离线使用？使用 [OPTIONS:需要离线支持|不需要离线支持] 提供选项。\n\n每条消息只问一个问题。`,
+          context: ctx,
+          isComplete: false,
+        };
+      }
+
       scenario.offlineSupport = userInput.includes("需要") && !userInput.includes("不需要");
       ctx.usageScenario = scenario;
 
@@ -59,6 +74,7 @@ export const usageScenarioSkill: SkillDefinition = {
       };
     }
 
+    // 3) 收集目标用户
     if (!scenario.targetUsers && userInput) {
       scenario.targetUsers = userInput;
       ctx.usageScenario = scenario;

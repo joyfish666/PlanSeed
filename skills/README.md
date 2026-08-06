@@ -109,19 +109,19 @@ The skill guides you through 7 sequential stages:
 7. Review             → Completeness and feasibility checks
 ```
 
-At each stage, the skill presents numbered options. You can:
-- Type a **number** (e.g., `1`) to select an option
-- Type **text** for custom input
+At each stage, the skill presents options for you to choose:
+
+- **In Claude Code**, options render as interactive selectable choices — pick with the arrow keys or number keys (no typing required).
+- **In other hosts** (Cursor / Codex) or when the interactive mechanism is unavailable, options fall back to numbered text — type a **number** (e.g., `1`) to select, or type **text** for custom input.
 
 ### After Document Generation
 
-The document is persisted by the host agent via the `save_document` tool and can be retrieved any time with `get_document`. After the document is generated, you can:
+The document is persisted by the host agent via the `save_document` tool and can be retrieved any time with `get_document`. Once generated, the agent **proactively asks whether to save the document to the current working directory** (e.g. `<project-name>-项目规划.md`) instead of keeping it in memory only. After that you can:
 
 - **Review completeness** - Check for gaps in the specification
 - **Review feasibility** - Assess technical complexity and timeline
-- **Save document** - Write `PROJECT_PLAN.md` to your current working directory
 - **Modify** - Adjust the document based on feedback (the updated document should be re-saved with `save_document`)
-- **Finish** - End the session and optionally start development
+- **Finish** - End the session; you'll be asked once more whether to save the document to the current directory
 
 ## Architecture
 
@@ -233,7 +233,7 @@ npm run dev
 |---------|----------|
 | MCP server not found in other directories | Register with `-s user` flag for global access |
 | Changes not taking effect | Run `npm run build` after modifying code |
-| Options not displaying as numbered list | Rebuild the project |
+| Options showing as plain text in Claude Code | Rebuild the project and reload the MCP server (newer builds render options as interactive selections) |
 | `claude mcp list` shows disconnected | Check that the Node.js path is correct |
 
 ---
@@ -289,7 +289,7 @@ claude mcp add planseed -s user -- node /你的绝对路径/PlanSeed/skills/dist
 7. 文档审查        → 完整性与可行性审查
 ```
 
-每个阶段提供编号选项，输入数字即可选择。文档生成后可保存为 `PROJECT_PLAN.md` 到当前目录。
+每个阶段提供选项供选择：在 Claude Code 中选项为**可交互选择**（上下键或数字直接选，无需打字）；在 Cursor / Codex 等不支持交互选择的环境中，自动降级为编号文本，输入数字选择。文档生成后，会**主动询问是否将文档保存到当前目录**，而非仅保存在内存。
 
 ### MCP 工具列表
 
@@ -325,5 +325,5 @@ Skill 是纯状态机，不调用任何 AI API。它返回提示词，由宿主 
 |------|----------|
 | 其他目录找不到 MCP 服务 | 使用 `-s user` 参数注册为用户级 |
 | 修改代码后不生效 | 重新执行 `npm run build` |
-| 选项没有编号 | 重新构建即可 |
+| 选项在 Claude Code 中显示为纯文本 | 重新构建并重载 MCP 服务（新版本会将选项渲染为可交互选择） |
 | `claude mcp list` 显示断开 | 检查 Node.js 路径是否正确 |

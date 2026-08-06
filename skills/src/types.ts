@@ -7,7 +7,7 @@ export interface SkillContext {
   featureStage: "collect" | "modifying";
   usageScenario: {
     devices: ("desktop" | "mobile" | "tablet")[];
-    offlineSupport: boolean;
+    offlineSupport: boolean | null; // null = 尚未询问离线支持
     targetUsers: string;
     userScale: string;
   };
